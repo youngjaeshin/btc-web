@@ -317,142 +317,29 @@ function HalvingChart() {
   );
 }
 
-// ─── Difficulty Adjustment Simulator ──────────────────────────────────────
-function DifficultySimulator() {
-  const [hashrateFactor, setHashrateFactor] = useState(2);
-  const TARGET_BLOCK_TIME = 10; // minutes
-  const ADJUSTMENT_PERIOD = 2016; // blocks
-
-  // Simulate 3 difficulty periods
-  const periods = [
-    { period: 1, hashrate: 1, difficulty: 1 },
-  ];
-
-  let prevDifficulty = 1;
-  let prevHashrate = 1;
-
-  for (let p = 1; p < 4; p++) {
-    // Apply hashrate change at period 2
-    const currentHashrate = p === 1 ? hashrateFactor : prevHashrate;
-    const actualBlockTime = TARGET_BLOCK_TIME / currentHashrate * prevDifficulty;
-    const actualPeriodTime = actualBlockTime * ADJUSTMENT_PERIOD;
-    const expectedPeriodTime = TARGET_BLOCK_TIME * ADJUSTMENT_PERIOD;
-    const ratio = expectedPeriodTime / actualPeriodTime;
-    const newDifficulty = Math.max(0.25, Math.min(4, prevDifficulty * ratio));
-
-    periods.push({
-      period: p + 1,
-      hashrate: currentHashrate,
-      difficulty: newDifficulty,
-    });
-    prevDifficulty = newDifficulty;
-    prevHashrate = currentHashrate;
-  }
-
-  const blockTimeFor = (p: { hashrate: number; difficulty: number }) =>
-    (TARGET_BLOCK_TIME / p.hashrate) * p.difficulty;
-
-  const factorLabel: Record<number, string> = {
-    0.25: "1/4x (급감)",
-    0.5: "1/2x (절반)",
-    1: "1x (동일)",
-    2: "2x (두 배)",
-    4: "4x (네 배)",
-  };
-
-  return (
-    <div className="not-prose my-6 rounded-xl border border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-950/20 p-5">
-      <h3 className="font-bold text-cyan-800 dark:text-cyan-200 mb-1 text-base">난이도 조절 시뮬레이터</h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        2번째 기간에 해시레이트가 변할 때, 난이도가 어떻게 적응해 블록 타임을 10분으로 복원하는지 확인하세요.
-      </p>
-
-      <div className="flex items-center gap-4 mb-5">
-        <label className="text-sm font-medium min-w-max">
-          해시레이트 변화: <span className="font-bold text-cyan-700 dark:text-cyan-300">{factorLabel[hashrateFactor] ?? `${hashrateFactor}x`}</span>
-        </label>
-        <select
-          value={hashrateFactor}
-          onChange={(e) => setHashrateFactor(Number(e.target.value))}
-          className="rounded-lg border border-cyan-300 dark:border-cyan-700 px-3 py-1.5 text-sm bg-white dark:bg-zinc-900"
-        >
-          <option value={0.25}>1/4x — 급격히 감소</option>
-          <option value={0.5}>1/2x — 절반으로 감소</option>
-          <option value={1}>1x — 변화 없음</option>
-          <option value={2}>2x — 두 배 증가</option>
-          <option value={4}>4x — 네 배 증가</option>
-        </select>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-center border-collapse">
-          <thead>
-            <tr className="bg-cyan-100 dark:bg-cyan-900/40">
-              <th className="px-3 py-2 border border-cyan-200 dark:border-cyan-700 text-left">기간</th>
-              <th className="px-3 py-2 border border-cyan-200 dark:border-cyan-700">해시레이트 배수</th>
-              <th className="px-3 py-2 border border-cyan-200 dark:border-cyan-700">난이도</th>
-              <th className="px-3 py-2 border border-cyan-200 dark:border-cyan-700">예상 블록 시간</th>
-              <th className="px-3 py-2 border border-cyan-200 dark:border-cyan-700">상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            {periods.map((p, i) => {
-              const bt = blockTimeFor(p);
-              const isTarget = Math.abs(bt - TARGET_BLOCK_TIME) < 0.5;
-              const isFast = bt < TARGET_BLOCK_TIME - 0.5;
-              return (
-                <tr key={i} className={i === 1 ? "bg-amber-50 dark:bg-amber-950/20" : ""}>
-                  <td className="px-3 py-2 border border-cyan-200 dark:border-cyan-700 text-left font-medium">
-                    기간 {p.period}{i === 1 ? " (변화)" : ""}
-                  </td>
-                  <td className="px-3 py-2 border border-cyan-200 dark:border-cyan-700 font-mono">
-                    {p.hashrate}x
-                  </td>
-                  <td className="px-3 py-2 border border-cyan-200 dark:border-cyan-700 font-mono font-bold">
-                    {p.difficulty.toFixed(3)}x
-                  </td>
-                  <td className={`px-3 py-2 border border-cyan-200 dark:border-cyan-700 font-mono font-bold ${isTarget ? "text-green-600 dark:text-green-400" : isFast ? "text-red-600 dark:text-red-400" : "text-amber-600 dark:text-amber-400"}`}>
-                    {bt.toFixed(1)}분
-                  </td>
-                  <td className="px-3 py-2 border border-cyan-200 dark:border-cyan-700 text-xs">
-                    {isTarget ? "목표 달성" : isFast ? "빠름 → 난이도↑" : "느림 → 난이도↓"}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <p className="text-xs text-muted-foreground mt-3">
-        * 실제 비트코인은 2016블록(약 2주)마다 조절됩니다. 조절 비율은 최대 4배/최소 1/4배로 제한됩니다.
-      </p>
-    </div>
-  );
-}
-
 // ─── Quiz ──────────────────────────────────────────────────────────────────
 const quizQuestions = [
   {
     question: "비트코인의 작업증명(PoW)에서 채굴자가 찾아야 하는 것은?",
     options: [
-      "특정 패턴의 개인키",
+      "블록 헤더를 암호화하는 비밀 개인키 값",
+      "블록에 포함할 최적의 트랜잭션 조합과 순서",
       "블록 헤더의 해시가 목표값(난이도) 이하가 되는 논스(Nonce)",
-      "최대 트랜잭션 수수료를 가진 트랜잭션 조합",
-      "네트워크의 51% 이상 노드로부터의 승인",
+      "네트워크 노드 과반수로부터 받는 디지털 서명 승인",
     ],
-    answer: 1,
+    answer: 2,
     explanation:
       "채굴자는 블록 헤더의 논스(Nonce) 값을 계속 바꿔가며 SHA-256 해시를 반복 계산합니다. 그 해시 결과가 현재 난이도 목표값(앞에 0이 충분히 많은 값)보다 작아지는 논스를 찾으면 블록을 발견한 것입니다.",
   },
   {
     question: "비트코인 난이도는 얼마나 자주 조절되는가?",
     options: [
-      "매 블록마다 (약 10분)",
-      "매일 (144블록)",
       "2016블록마다 (약 2주)",
+      "매일 (144블록)",
+      "매 블록마다 (약 10분)",
       "반감기마다 (210,000블록)",
     ],
-    answer: 2,
+    answer: 0,
     explanation:
       "비트코인은 2016블록(약 2주)마다 난이도를 자동 조절합니다. 직전 2016블록이 실제로 걸린 시간을 2주(20,160분)와 비교해 난이도를 늘리거나 줄입니다. 목표는 항상 평균 블록 생성 시간을 약 10분으로 유지하는 것입니다.",
   },
@@ -460,11 +347,11 @@ const quizQuestions = [
     question: "비트코인 반감기(Halving)란?",
     options: [
       "비트코인 가격이 절반으로 떨어지는 사건",
-      "210,000블록마다 채굴 보상이 절반으로 줄어드는 사건",
       "네트워크 해시레이트가 절반으로 줄어드는 사건",
       "트랜잭션 수수료가 절반으로 줄어드는 사건",
+      "210,000블록마다 채굴 보상이 절반으로 줄어드는 사건",
     ],
-    answer: 1,
+    answer: 3,
     explanation:
       "반감기(Halving)는 210,000블록(약 4년)마다 채굴자에게 지급되는 블록 보상이 절반으로 줄어드는 프로토콜 규칙입니다. 2009년 50 BTC로 시작해 2012년 25 BTC, 2016년 12.5 BTC, 2020년 6.25 BTC, 2024년 3.125 BTC로 줄었습니다.",
   },
@@ -472,35 +359,35 @@ const quizQuestions = [
     question: "비트코인의 총 발행 한도는?",
     options: [
       "1,000만 BTC",
-      "1,500만 BTC",
-      "2,000만 BTC",
       "2,100만 BTC",
+      "2,000만 BTC",
+      "1,500만 BTC",
     ],
-    answer: 3,
+    answer: 1,
     explanation:
       "비트코인 프로토콜에 하드코딩된 총 발행 한도는 21,000,000 BTC(2,100만 BTC)입니다. 반감기를 거듭하면서 채굴 보상이 0에 수렴하며, 약 2140년경 마지막 비트코인이 채굴될 것으로 예상됩니다. 이후 채굴자는 트랜잭션 수수료로만 수입을 얻습니다.",
   },
   {
     question: "작업증명(PoW)에서 에너지 소비가 보안에 필수적인 이유는?",
     options: [
-      "에너지 소비량이 많을수록 비트코인 가격이 오르기 때문에",
       "에너지 소비가 블록 생성 비용(Unforgeable Costliness)을 만들어 역사 변조를 경제적으로 불가능하게 하기 때문에",
-      "채굴기 전력 소모가 네트워크 보안 예산이 되기 때문에",
-      "에너지를 소비할수록 더 많은 비트코인이 발행되기 때문에",
+      "에너지 소비량에 비례해 채굴자의 투표권이 늘어나기 때문에",
+      "전력 소모량이 클수록 해시 결과가 더 강하게 암호화되기 때문에",
+      "에너지 소비량에 따라 블록 보상이 추가로 지급되기 때문에",
     ],
-    answer: 1,
+    answer: 0,
     explanation:
       "PoW의 핵심은 'Unforgeable Costliness(위조 불가능한 비용)'입니다. 과거 블록을 변조하려면 그 블록부터 현재까지의 모든 작업증명을 다시 수행해야 합니다. 이 물리적 에너지 비용이 공격을 경제적으로 불합리하게 만듭니다. 에너지 소비 자체가 보안의 근거입니다.",
   },
   {
     question: "비트코인이 채굴자들이 소비하는 에너지의 상당 부분이 '좌초 에너지'라는 주장의 의미는?",
     options: [
-      "채굴 장비가 사막 지역에 설치된다는 의미",
-      "재생에너지만 사용한다는 의미",
+      "채굴 장비가 전력망이 없는 오지 사막 지역에만 설치된다는 의미",
+      "채굴에 태양광·풍력 등 인증된 재생에너지만 법적으로 허용된다는 의미",
+      "채굴 해시 연산 과정에서 입력 에너지의 대부분이 열로 영구 손실된다는 의미",
       "수송이 불가능하거나 버려지는 잉여 에너지(수력, 풍력 잉여분 등)를 활용한다는 의미",
-      "채굴 과정에서 에너지가 영구적으로 손실된다는 의미",
     ],
-    answer: 2,
+    answer: 3,
     explanation:
       "좌초 에너지(Stranded Energy)란 지리적 위치나 시간적 조건으로 인해 사용되지 못하고 버려지는 잉여 에너지입니다. 비트코인 채굴은 인터넷만 있으면 어디서든 가능하므로, 송전선이 닿지 않는 오지의 수력발전소나 전력망이 흡수 못 하는 풍력·태양광 잉여전력을 활용하는 경향이 있습니다.",
   },
@@ -508,11 +395,11 @@ const quizQuestions = [
     question: "해시레이트(Hashrate)가 두 배가 되면 다음 난이도 조절 시 어떻게 변하는가?",
     options: [
       "난이도가 변하지 않는다",
-      "난이도가 절반으로 줄어든다",
       "난이도가 두 배로 늘어난다",
+      "난이도가 절반으로 줄어든다",
       "블록 보상이 절반으로 줄어든다",
     ],
-    answer: 2,
+    answer: 1,
     explanation:
       "해시레이트가 두 배가 되면 블록이 목표보다 두 배 빨리(5분마다) 생성됩니다. 다음 2016블록 조절 시 실제 걸린 시간(약 1주)이 목표(2주)의 절반이므로, 난이도는 두 배로 상승합니다. 이를 통해 블록 타임이 다시 10분으로 회복됩니다.",
   },
@@ -520,11 +407,11 @@ const quizQuestions = [
     question: "비트코인의 마지막 블록 보상이 사라진 이후(약 2140년) 채굴자의 수입은?",
     options: [
       "더 이상 채굴 수입이 없어 채굴자가 모두 사라진다",
-      "트랜잭션 수수료만으로 수입을 얻는다",
       "새로운 프로토콜 업그레이드로 보상이 다시 시작된다",
+      "트랜잭션 수수료만으로 수입을 얻는다",
       "비트코인 네트워크가 자동 종료된다",
     ],
-    answer: 1,
+    answer: 2,
     explanation:
       "약 2140년 이후 블록 보상이 0에 수렴하면, 채굴자는 오직 트랜잭션 수수료로만 수입을 얻습니다. 비트코인의 장기 보안 모델은 트랜잭션 수수료가 충분한 수익을 제공할 것이라고 가정합니다. 라이트닝 네트워크 등 레이어2의 성장도 온체인 수수료 수익의 지속 가능성에 중요합니다.",
   },
@@ -544,14 +431,25 @@ export default function Ch04ProofOfWork() {
         </p>
         <p>
           이 개념의 핵심은 <strong>Unforgeable Costliness(위조 불가능한 비용)</strong>입니다. 금을 채굴하려면
-          실제 물리적 에너지와 자원이 필요합니다. 금은 이 비용 때문에 가치를 유지합니다. 비트코인의 작업증명도
-          동일한 원리입니다. 비트코인 블록을 생성하려면 실제로 전기를 소비해야 하므로, 역사를 변조하려면
-          막대한 물리적 비용이 듭니다. 이것이 디지털 역사의 불변성을 보장합니다.
+          실제 물리적 에너지와 자원이 필요합니다. 이 비용은 금의 가치를 만드는 것이 아니라, 금의 공급을
+          쉽게 늘릴 수 없게 만들어 <strong>희소성을 보장</strong>합니다. 비트코인의 작업증명도
+          같은 역할입니다. 비트코인 블록을 생성하려면 실제로 전기를 소비해야 하므로, 과거 기록을 변조하려면
+          막대한 물리적 비용이 듭니다. PoW는 비트코인의 <strong>가치</strong>를 만드는 것이 아니라,
+          원장의 <strong>불변성과 보안</strong>을 보장합니다.
         </p>
         <InfoBox type="definition" title="작업증명 (Proof of Work)">
           작업증명은 컴퓨터가 일정량의 계산 작업(에너지 소비)을 수행했음을 쉽게 검증할 수 있는 메커니즘입니다.
           SHA-256 해시를 계산하는 것은 비용이 들지만, 결과를 검증하는 것은 매우 빠릅니다. 채굴자는 많은 에너지를
           써서 해시를 찾고, 네트워크는 한 번의 해시 계산만으로 결과를 검증합니다.
+        </InfoBox>
+        <InfoBox type="warning" title="흔한 오해: 생산 비용 = 가치?">
+          &ldquo;비트코인을 채굴하는 데 에너지가 들기 때문에 비트코인이 가치를 갖는다&rdquo;는 주장은
+          <strong>노동가치론(Labor Theory of Value)</strong>이라는 오래된 경제학적 오류입니다.
+          실제로 비트코인의 가치는 사용자들의 수요, 즉 검열 저항성, 자기주권, 고정된 공급 한도, 국경 없는
+          이동성 등 비트코인의 <strong>고유한 화폐적 속성</strong>에서 나옵니다.
+          채굴 비용은 가격을 따라갑니다 — 비트코인 가격이 오르면 채굴자들이 더 많은 에너지를 투자하는 것이지,
+          에너지를 더 쓴다고 가격이 오르는 것이 아닙니다. PoW의 역할은 가치 창출이 아니라
+          <strong>원장 보안</strong>입니다.
         </InfoBox>
         <p>
           PoW의 또 다른 의미는 <strong>1 CPU = 1 표</strong>입니다. 네트워크 지배력은 신원이 아닌 실제
@@ -614,8 +512,6 @@ export default function Ch04ProofOfWork() {
           />
         </div>
 
-        <DifficultySimulator />
-
         <p>
           이 메커니즘은 놀라울 정도로 강건합니다. 2021년 중국 채굴 금지로 글로벌 해시레이트가 하루아침에
           50% 이상 급감했지만, 두 번의 난이도 조절 이후 비트코인 네트워크는 완전히 정상화됐습니다. 어떤
@@ -665,31 +561,20 @@ export default function Ch04ProofOfWork() {
 
         <p>
           반감기는 비트코인의 통화 정책이 완전히 예측 가능하고 변경 불가능함을 보여줍니다. 어떤 중앙은행도,
-          어떤 정부도, 심지어 사토시 나카모토도 이 스케줄을 바꿀 수 없습니다. 역사상 처음으로 인류는
-          수학에 의해 보장되는 공급 한도를 가진 화폐를 가지게 됐습니다.
+          어떤 정부도, 심지어 사토시 나카모토도 이 스케줄을 바꿀 수 없습니다.
+          이 반감기 구조로 인해 총 발행량은 수학적으로 정확히 2,100만 BTC에 수렴합니다.
+          공급 공식의 수학적 유도와 Stock-to-Flow 분석, 그리고 이것이 만들어내는
+          디지털 희소성의 의미는 5장(희소성)에서 깊이 있게 다룹니다.
         </p>
-
-        <div className="not-prose my-4">
-          <KatexBlock
-            math={"\\text{Total Supply} = \\sum_{n=0}^{32} 210{,}000 \\times \\frac{50}{2^n} = 21{,}000{,}000 \\text{ BTC}"}
-            display={true}
-          />
-        </div>
-        <p className="text-sm text-muted-foreground">
-          ※ 기하급수 합산: 초기 보상 50 BTC × 210,000블록 × 2배 수렴 = 21,000,000 BTC
-        </p>
-
-        <InfoBox type="tip" title="디지털 희소성의 의미">
-          금은 새로운 매장지 발견이나 소행성 채굴 기술이 등장하면 공급이 늘어날 수 있습니다. 비트코인의
-          2,100만 BTC 한도는 수학적으로 보장됩니다. 이것이 사상 최초의 완전한 디지털 희소성입니다.
-        </InfoBox>
       </section>
 
       {/* Section 5: 에너지 소비 논쟁 */}
       <section>
         <h2 className="text-2xl font-bold mb-4">5. 에너지 소비 논쟁 — 비트코이너의 관점</h2>
         <p>
-          비트코인 채굴이 전기를 낭비한다는 비판이 있습니다. 하지만 비트코이너들은 다른 관점을 제시합니다.
+          비트코인 채굴이 전기를 낭비한다는 비판이 있습니다. 하지만 이는 PoW의 역할을 이해하지 못한 비판입니다.
+          비트코인의 에너지 소비는 낭비가 아니라 <strong>보안 메커니즘</strong>입니다. 물리적 에너지 소비가
+          있기 때문에 어떤 국가나 기업도 비트코인 원장을 마음대로 변조할 수 없습니다.
         </p>
 
         <div className="not-prose my-4 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -705,9 +590,9 @@ export default function Ch04ProofOfWork() {
           <div className="rounded-xl border border-green-200 dark:border-green-800 p-4">
             <div className="font-bold text-green-700 dark:text-green-300 mb-2">비트코이너의 답변</div>
             <ul className="space-y-1.5 text-sm text-muted-foreground">
-              <li>• 에너지 소비 = 보안의 물리적 근거 (필수)</li>
-              <li>• 좌초 에너지·잉여 재생에너지 활용</li>
-              <li>• 에너지 사용량과 가치는 별개 문제</li>
+              <li>• 에너지 소비 = 보안의 물리적 근거 (기능, 버그 아님)</li>
+              <li>• 좌초 에너지·잉여 재생에너지 활용 → 재생에너지 투자 촉진</li>
+              <li>• 채굴 비용은 가격을 따라감 (가치→비용, 비용→가치 아님)</li>
               <li>• 금 채굴·기존 금융 시스템도 막대한 에너지 소비</li>
             </ul>
           </div>
@@ -724,14 +609,23 @@ export default function Ch04ProofOfWork() {
           비트코인은 에너지의 <strong>최종 구매자(Buyer of Last Resort)</strong>입니다. 전력망이 닿지 않아
           버려지던 오지의 수력발전 잉여 전력, 해가 쨍쨍한 낮에 전력망이 흡수 못 하는 태양광 잉여분,
           바람이 강한 날의 풍력 잉여분 — 이런 좌초 에너지를 비트코인 채굴이 즉시 현금화합니다.
-          이는 재생에너지 사업의 수익성을 높여 더 많은 설비 투자를 유도하는 긍정적 역할을 합니다.
+        </p>
+        <p>
+          이것은 재생에너지 산업에 중대한 의미를 갖습니다. 재생에너지의 가장 큰 문제는 간헐성(해가 지면 태양광
+          발전이 멈추고, 바람이 안 불면 풍력이 멈춤)과 송전 인프라 부족입니다. 비트코인 채굴은 이 잉여 전력에
+          <strong>항시 수요</strong>를 제공함으로써 재생에너지 프로젝트의 수익성을 근본적으로 개선합니다.
+          채굴 수익이 보장되면 오지에 풍력·태양광 발전소를 건설하는 것이 경제적으로 가능해지고,
+          이는 결과적으로 전체 재생에너지 인프라의 확충을 촉진합니다. 비트코인 채굴은 에너지를 소비하는 동시에
+          더 많은 재생에너지 생산을 유도하는 <strong>순환적 인센티브 구조</strong>를 만듭니다.
         </p>
 
         <InfoBox type="tip" title="PoS와 비교: '더 효율적인 방법'의 트레이드오프">
           지분증명(PoS, Proof of Stake)은 에너지를 적게 쓴다는 장점이 있습니다. 하지만 비트코이너들은
-          PoS가 물리적 비용 없이 디지털 가중치만으로 합의하므로, 결국 지분을 많이 가진 자(초기 투자자, 재단)에게
-          권력이 집중된다고 비판합니다. 비트코인의 에너지 소비는 버그가 아니라 탈중앙화를 물리적으로 보장하는
-          핵심 기능입니다.
+          PoS의 근본적 한계를 지적합니다. PoS에서는 지분을 많이 가진 자(초기 투자자, 재단)가 네트워크 권력을
+          가지며, 새로운 참여자가 이를 뒤집으려면 기존 보유자로부터 토큰을 구매해야 합니다 — 결국 기존 권력 구조가
+          영속됩니다. 반면 PoW에서는 누구든 채굴기를 돌리면 네트워크에 참여할 수 있고, 보안은 디지털 장부 안의
+          숫자가 아닌 <strong>현실 세계의 물리적 에너지</strong>에 기반합니다. 비트코인의 에너지 소비는 버그가
+          아니라 합의를 물리 법칙에 고정(anchoring)시키는 핵심 설계입니다.
         </InfoBox>
       </section>
 

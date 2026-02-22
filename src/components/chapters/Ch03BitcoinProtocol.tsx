@@ -319,20 +319,20 @@ function MerkleTreeSim() {
 const quizQuestions = [
   {
     question: "사토시 나카모토가 비트코인 백서를 발표한 연도는?",
-    options: ["2006년", "2008년", "2010년", "2012년"],
-    answer: 1,
+    options: ["2006년", "2012년", "2010년", "2008년"],
+    answer: 3,
     explanation:
       "2008년 10월 31일, 사토시 나카모토는 암호학 메일링 리스트에 'Bitcoin: A Peer-to-Peer Electronic Cash System' 백서를 공개했습니다. 전 세계 금융위기가 한창이던 시기였습니다.",
   },
   {
     question: "제네시스 블록(블록 #0) 코인베이스에 새겨진 타임스탬프 메시지의 출처는?",
     options: [
-      "뉴욕타임스 1면",
       "영국 타임스(The Times) 1면",
+      "뉴욕타임스 1면",
       "월스트리트저널 1면",
       "사토시 나카모토의 개인 선언문",
     ],
-    answer: 1,
+    answer: 0,
     explanation:
       "'Chancellor on brink of second bailout for banks'는 2009년 1월 3일 영국 타임스(The Times) 1면 헤드라인입니다. 사토시는 이 메시지를 새겨 중앙은행 구제금융에 대한 풍자와 함께 비트코인의 탄생 시점을 증명했습니다.",
   },
@@ -340,11 +340,11 @@ const quizQuestions = [
     question: "UTXO란 무엇의 약자인가?",
     options: [
       "Universal Transaction eXchange Output",
-      "Unspent Transaction Output",
       "Unified Token eXchange Operation",
+      "Unspent Transaction Output",
       "Unsigned Transaction eXtra Order",
     ],
-    answer: 1,
+    answer: 2,
     explanation:
       "UTXO(Unspent Transaction Output)는 아직 사용되지 않은 트랜잭션 출력입니다. 비트코인 잔액은 실제로 계좌 잔액이 아니라 여러 UTXO의 합계이며, 모든 트랜잭션은 기존 UTXO를 소비(Input)하고 새 UTXO를 생성(Output)합니다.",
   },
@@ -363,48 +363,48 @@ const quizQuestions = [
   {
     question: "블록 헤더에 포함되지 않는 정보는?",
     options: [
-      "이전 블록 해시 (Previous Block Hash)",
-      "머클루트 (Merkle Root)",
       "트랜잭션 상세 내역 (Transaction Details)",
+      "머클루트 (Merkle Root)",
+      "이전 블록 해시 (Previous Block Hash)",
       "논스 (Nonce)",
     ],
-    answer: 2,
+    answer: 0,
     explanation:
       "블록 헤더(80바이트)에는 버전, 이전 블록 해시, 머클루트, 타임스탬프, 난이도(nBits), 논스가 포함됩니다. 실제 트랜잭션 상세 내역은 블록 바디에 저장되며, 헤더에는 이를 요약한 머클루트만 포함됩니다.",
   },
   {
     question: "머클 트리(Merkle Tree)의 주요 역할은?",
     options: [
-      "트랜잭션 전송 속도를 높이기 위해",
-      "블록 보상을 계산하기 위해",
+      "노드 간 트랜잭션 전파 경로를 최적화해 네트워크 전송 속도를 높이기 위해",
+      "반감기 일정에 따른 채굴자의 블록 보상 금액을 자동으로 계산하기 위해",
+      "개인키와 공개키 쌍을 조합해 새로운 비트코인 주소를 생성하기 위해",
       "모든 트랜잭션을 효율적으로 요약하고 무결성을 검증하기 위해",
-      "새로운 비트코인 주소를 생성하기 위해",
     ],
-    answer: 2,
+    answer: 3,
     explanation:
       "머클 트리는 블록 내 모든 트랜잭션을 쌍으로 해싱해 하나의 루트(머클루트)로 요약합니다. 이를 통해 트랜잭션 하나가 특정 블록에 포함됐는지 전체 블록 데이터 없이 O(log n)으로 검증할 수 있습니다(SPV 검증).",
   },
   {
     question: "이중지불(Double Spend) 문제를 비트코인은 어떻게 해결하는가?",
     options: [
-      "각 트랜잭션에 고유 시리얼 번호를 부여하여",
-      "중앙 서버가 모든 잔액을 추적하여",
+      "각 트랜잭션에 순차적 고유 시리얼 번호를 부여해 중복 사용 여부를 추적하여",
       "작업증명(PoW)과 분산된 공개 장부(블록체인)를 통해 네트워크 합의로",
-      "사용자 신원 인증(KYC)을 통해",
+      "신뢰할 수 있는 중앙 서버가 모든 지갑 잔액을 실시간으로 추적하고 승인하여",
+      "거래 전 사용자 신원 인증(KYC)을 의무화해 이중 사용 시 법적 책임을 부과하여",
     ],
-    answer: 2,
+    answer: 1,
     explanation:
       "비트코인은 중앙 기관 없이 작업증명 기반 합의와 공개 블록체인을 통해 이중지불을 방지합니다. 모든 노드가 동일한 원장을 유지하며, 가장 긴 체인(최대 누적 작업량)이 유효한 기록으로 인정됩니다.",
   },
   {
     question: "트랜잭션의 디지털 서명(Digital Signature)이 보장하는 것은?",
     options: [
-      "수신자의 신원이 확인된다",
+      "수신자 주소가 실제 존재하는 등록된 지갑임이 네트워크에 의해 확인된다",
+      "트랜잭션 데이터 크기와 네트워크 혼잡도에 따라 수수료가 자동으로 계산된다",
       "발신자가 해당 UTXO의 개인키 소유자임을 증명하고 트랜잭션 위변조를 방지한다",
-      "트랜잭션 수수료가 자동으로 계산된다",
-      "블록 채굴 난이도가 자동 조절된다",
+      "서명에 포함된 타임스탬프를 기반으로 블록 채굴 난이도가 자동으로 조절된다",
     ],
-    answer: 1,
+    answer: 2,
     explanation:
       "비트코인은 타원곡선 디지털 서명 알고리즘(ECDSA)을 사용합니다. 개인키로 서명하면 네트워크의 누구나 대응하는 공개키로 서명을 검증할 수 있습니다. 개인키를 공개하지 않으면서 소유를 증명하는 것이 핵심입니다.",
   },
@@ -469,6 +469,7 @@ export default function Ch03BitcoinProtocol() {
           비트코인은 중앙 기관 없이 이중지불을 해결합니다. 모든 트랜잭션을 공개 장부(블록체인)에 기록하고,
           수천 개의 노드가 각자 이 장부의 복사본을 보유합니다. 새로운 트랜잭션이 유효하려면 네트워크 합의(작업증명)를
           거쳐야 합니다. 단 하나의 노드도 신뢰할 필요가 없습니다. 규칙 자체를 신뢰합니다.
+          작업증명의 구체적인 메커니즘은 4장에서 상세히 다룹니다.
         </InfoBox>
       </section>
 

@@ -12,16 +12,23 @@ import { Card } from "@/components/ui/card";
 // M2 통화량 vs 자산가격 차트
 // ---------------------------------------------------------------------------
 
-// Approximate historical data (indexed to 100 at 1971)
-// M2 (US, trillions), Gold ($/oz), S&P500, Home Price Index
+// Real historical data indexed to 100 at 1971
+// Sources:
+//   M2: FRED M2SL (annual avg, billions USD) — fred.stlouisfed.org/series/M2SL
+//   Gold: LBMA London Fix (annual avg, USD/oz) — inflationdata.com
+//   S&P 500: Jan 1 price each year — multpl.com (Robert Shiller)
+//   Home: FRED CSUSHPINSA + Shiller pre-1987 — fred.stlouisfed.org/series/CSUSHPINSA
+// Base values at 1971: M2=$674.4B, Gold=$40.95/oz, S&P500=93.49, Home=21.65
 const YEARS = [
-  1971, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2008, 2010,
-  2015, 2018, 2020, 2021, 2022, 2023,
+  1971, 1975, 1980, 1985, 1990, 1995, 2000, 2005,
+  2008, 2010, 2012, 2015, 2018, 2020, 2021, 2022, 2023, 2024, 2025,
 ];
-const M2_INDEX =       [100, 145, 230, 340, 510, 640, 870, 1150, 1300, 1450, 1900, 2200, 3400, 3800, 3700, 3850];
-const GOLD_INDEX =     [100, 460, 1760, 910, 1110, 1100, 770, 1460, 2490, 3490, 3030, 3630, 5060, 5140, 5140, 5540];
-const SP500_INDEX =    [100, 80, 130, 250, 380, 590, 1500, 1300, 900, 1100, 2100, 2900, 3750, 4700, 3840, 4700];
-const HOME_INDEX =     [100, 130, 200, 230, 300, 290, 380, 560, 430, 400, 480, 560, 600, 700, 740, 720];
+const M2_INDEX =    [100, 143, 228, 358, 478, 527, 711, 970, 1157, 1282, 1492, 1788, 2093, 2620, 3042, 3199, 3088, 3128, 3257];
+const GOLD_INDEX =  [100, 412, 1642, 813, 1005, 987, 709, 1162, 2129, 2990, 4076, 2833, 3098, 4331, 4393, 4400, 4745, 5829, 8140];
+const SP500_INDEX = [100, 78, 119, 184, 364, 498, 1525, 1264, 1475, 1202, 1391, 2169, 2984, 3506, 4058, 4892, 4236, 5139, 6396];
+const HOME_INDEX =  [100, 126, 211, 261, 355, 374, 484, 794, 758, 668, 651, 795, 935, 1026, 1201, 1378, 1412, 1485, 1518];
+
+const DATA_SOURCES = "M2: FRED M2SL | Gold: LBMA London Fix | S&P 500: multpl.com | Home: FRED CSUSHPINSA (2025년 기준)";
 
 function M2AssetChart() {
   const [visible, setVisible] = useState({
@@ -123,6 +130,9 @@ function M2AssetChart() {
         }}
         config={{ displayModeBar: false }}
       />
+      <p className="text-[11px] text-muted-foreground text-center mt-1 mb-4">
+        출처: {DATA_SOURCES}
+      </p>
       <InfoBox type="warning" title="통화팽창과 자산가격">
         M2 통화량과 자산가격의 상관관계는 우연이 아닙니다. 새로 발행된 화폐는
         먼저 금융 시스템에 유입되어 자산 가격을 올리고, 그 혜택은 자산 보유자에게 돌아갑니다.
@@ -260,127 +270,6 @@ function InflationCalculator() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// 칸티용 효과 시각화
-// ---------------------------------------------------------------------------
-function CantillonEffect() {
-  const [issuanceAmount, setIssuanceAmount] = useState(100);
-
-  // 1차 수혜자(은행): +issuance, 물가 +0%
-  // 2차(대기업): +issuance*0.6, 물가 +3%
-  // 3차(일반인): +issuance*0.2, 물가 +8%
-  const priceIncrease = issuanceAmount * 0.08;
-
-  const groups = [
-    {
-      name: "중앙은행 / 1차 수혜자",
-      gain: issuanceAmount,
-      pricePaid: 0,
-      net: issuanceAmount,
-      color: "#dc2626",
-      desc: "새 화폐를 원가 0에 발행·수령",
-    },
-    {
-      name: "시중은행 / 대형금융기관",
-      gain: issuanceAmount * 0.7,
-      pricePaid: priceIncrease * 0.2,
-      net: issuanceAmount * 0.7 - priceIncrease * 0.2,
-      color: "#ea580c",
-      desc: "낮은 금리로 먼저 차입, 물가 오르기 전 자산 매입",
-    },
-    {
-      name: "대기업 / 자산 보유층",
-      gain: issuanceAmount * 0.3,
-      pricePaid: priceIncrease * 0.6,
-      net: issuanceAmount * 0.3 - priceIncrease * 0.6,
-      color: "#ca8a04",
-      desc: "이미 자산 보유, 부분적 혜택 + 물가 상승 부담",
-    },
-    {
-      name: "일반 시민 / 임금 노동자",
-      gain: 0,
-      pricePaid: priceIncrease,
-      net: -priceIncrease,
-      color: "#16a34a",
-      desc: "화폐 발행 혜택 없음, 물가 상승만 부담",
-    },
-  ];
-
-  return (
-    <div className="my-8">
-      <h3 className="text-lg font-semibold mb-3">칸티용 효과 시각화</h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        새 화폐 발행 시 계층별 실질 구매력 변화를 시각화합니다.
-        새 화폐는 경제 전체에 즉시 균등 분배되지 않고, 금융 시스템에 가까운 순서대로 유입됩니다.
-      </p>
-      <div className="mb-4">
-        <label className="text-sm font-medium block mb-2">
-          화폐 발행량: {issuanceAmount}조 원
-        </label>
-        <Slider
-          min={10}
-          max={500}
-          step={10}
-          value={[issuanceAmount]}
-          onValueChange={([v]) => setIssuanceAmount(v)}
-        />
-      </div>
-      <div className="space-y-3 mb-6">
-        {groups.map(({ name, gain, pricePaid, net, color, desc }) => (
-          <div key={name} className="rounded-lg border p-3">
-            <div className="flex items-start justify-between mb-2">
-              <div>
-                <p className="font-medium text-sm" style={{ color }}>{name}</p>
-                <p className="text-xs text-muted-foreground">{desc}</p>
-              </div>
-              <div className="text-right">
-                <p className={`text-lg font-bold ${net >= 0 ? "text-green-600" : "text-red-600"}`}>
-                  {net >= 0 ? "+" : ""}{net.toFixed(1)}조
-                </p>
-                <p className="text-xs text-muted-foreground">순 구매력 변화</p>
-              </div>
-            </div>
-            <div className="flex gap-4 text-xs text-muted-foreground">
-              <span className="text-green-600">혜택: +{gain.toFixed(1)}조</span>
-              <span className="text-red-600">물가 부담: -{pricePaid.toFixed(1)}조</span>
-            </div>
-          </div>
-        ))}
-      </div>
-      <Plot
-        data={[
-          {
-            x: groups.map((g) => g.name),
-            y: groups.map((g) => g.gain),
-            type: "bar",
-            name: "화폐 발행 혜택 (조 원)",
-            marker: { color: "#22c55e" },
-          },
-          {
-            x: groups.map((g) => g.name),
-            y: groups.map((g) => -g.pricePaid),
-            type: "bar",
-            name: "물가 상승 손실 (조 원)",
-            marker: { color: "#ef4444" },
-          },
-        ]}
-        layout={{
-          title: { text: "계층별 화폐 발행 순효과 (조 원)" },
-          xaxis: { title: { text: "계층" } },
-          yaxis: { title: { text: "순 구매력 변화 (조 원)" } },
-          barmode: "relative",
-          height: 360,
-          margin: { t: 50, b: 100, l: 70, r: 30 },
-          paper_bgcolor: "rgba(0,0,0,0)",
-          plot_bgcolor: "rgba(0,0,0,0)",
-          font: { color: "#888" },
-          legend: { orientation: "h", y: -0.35 },
-        }}
-        config={{ displayModeBar: false }}
-      />
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // 퀴즈 데이터
@@ -389,46 +278,46 @@ const QUIZ_QUESTIONS = [
   {
     question: "1971년 닉슨 쇼크의 핵심 내용은 무엇인가?",
     options: [
-      "미국이 달러를 유로와의 고정 환율 체제에 편입시켰다",
       "미국이 달러와 금의 태환(교환) 보장을 일방적으로 중단했다",
-      "미국이 연방준비제도(Fed)를 해체하고 새로운 통화 기관을 설립했다",
-      "미국이 달러 발행량을 헌법으로 제한하는 법안을 통과시켰다",
+      "미국이 달러를 주요 6개국 통화 바스켓과의 고정 환율 체제에 편입시켰다",
+      "미국이 연방준비제도(Fed)를 해체하고 새로운 독립 통화 감독 기관을 설립했다",
+      "미국이 달러 연간 발행량 상한을 GDP 성장률로 제한하는 법안을 통과시켰다",
     ],
-    answer: 1,
+    answer: 0,
     explanation:
       "1971년 8월 15일, 닉슨 대통령은 베트남 전쟁 비용과 복지 지출 확대로 인한 달러 과잉 발행으로 금 보유량이 고갈될 위기에 처하자, 달러를 금 1온스 = 35달러 비율로 교환해주던 약속을 일방적으로 파기했습니다. 이로써 인류 역사의 화폐는 처음으로 어떤 실물 자산과도 연동되지 않은 순수 법정화폐 시대로 진입했습니다.",
   },
   {
     question: "중앙은행의 양적완화(QE, Quantitative Easing)를 가장 정확하게 설명한 것은?",
     options: [
-      "중앙은행이 국민에게 직접 현금을 배분하는 정책",
+      "중앙은행이 저소득층 가구에 직접 현금을 지급해 소비를 진작하는 정책",
+      "정부가 법인세와 소득세를 인하해 민간 투자와 소비를 활성화하는 재정 정책",
       "중앙은행이 국채 등 자산을 매입해 시중에 통화를 공급하는 정책",
-      "정부가 세금을 낮춰 경제를 활성화하는 재정 정책",
-      "은행들이 서로 대출을 늘려 통화량을 확대하는 민간 정책",
+      "시중은행들이 상호 대출 한도를 협약으로 늘려 통화량을 확대하는 민간 정책",
     ],
-    answer: 1,
+    answer: 2,
     explanation:
       "양적완화는 중앙은행이 국채, 모기지담보증권(MBS) 등을 시중 은행으로부터 매입하면서 그 대금으로 새 화폐를 공급하는 정책입니다. 2008년 금융위기 이후 미 연준은 수조 달러 규모의 QE를 실행했습니다. 이는 사실상 무에서 화폐를 창조하는 행위입니다.",
   },
   {
     question: "칸티용 효과(Cantillon Effect)가 의미하는 것은?",
     options: [
-      "통화 공급 증가가 모든 계층에 동시에 균등하게 영향을 미친다",
+      "통화 공급 증가는 모든 경제 주체에게 동시에 균등하게 구매력으로 전달된다",
+      "인플레이션은 자산 규모와 무관하게 모든 계층에 동일한 실질 부담을 지운다",
+      "통화 공급이 늘어날수록 GDP 성장률도 같은 비율로 정비례하여 증가한다",
       "새로 발행된 화폐가 금융 시스템에 가까운 순서대로 먼저 혜택을 주고, 일반 시민은 물가 상승만 부담한다",
-      "통화 공급이 늘어날수록 경제 성장률도 정비례로 증가한다",
-      "인플레이션은 부자와 가난한 사람 모두에게 동일한 비율로 영향을 미친다",
     ],
-    answer: 1,
+    answer: 3,
     explanation:
       "18세기 경제학자 리처드 칸티용이 발견한 이 효과는, 새 화폐는 경제 전체에 즉시 퍼지지 않고 중앙은행 → 시중은행 → 대기업 → 일반 시민 순서로 도달한다는 것입니다. 먼저 받은 사람은 물가 오르기 전 구매할 수 있어 이득을 보고, 마지막에 받는 일반 시민은 이미 오른 물가만 부담합니다.",
   },
   {
     question: "부분지급준비제도(Fractional Reserve Banking)의 핵심 메커니즘은?",
     options: [
-      "은행이 예금액의 100%를 항상 금고에 보유해야 한다",
+      "은행이 예금액의 100%를 항상 금고에 보유해 지급 불능 위험을 완전히 차단한다",
       "은행이 예금액의 일부만 준비금으로 보유하고 나머지를 대출해 통화를 창조한다",
-      "은행이 중앙은행에서만 자금을 빌려 대출한다",
-      "예금자가 직접 대출자에게 돈을 빌려주는 P2P 시스템",
+      "은행이 중앙은행으로부터만 자금을 빌려 일반 고객에게 재대출하는 방식으로 운영된다",
+      "예금자가 플랫폼을 통해 대출자에게 직접 자금을 공급하는 P2P 직접 대출 시스템",
     ],
     answer: 1,
     explanation:
@@ -437,50 +326,50 @@ const QUIZ_QUESTIONS = [
   {
     question: "1971년 금태환 중단 이후 50년간 미국 달러의 구매력 변화는 대략 어떻게 되었는가?",
     options: [
-      "구매력이 약 50% 증가했다",
-      "구매력이 거의 변화 없이 유지되었다",
       "구매력이 약 95% 이상 감소했다",
+      "구매력이 거의 변화 없이 유지되었다",
+      "구매력이 약 50% 증가했다",
       "구매력이 약 30% 감소했다",
     ],
-    answer: 2,
+    answer: 0,
     explanation:
-      "미국 노동통계국(BLS) 데이터에 따르면 1971년의 1달러는 2024년 기준으로 약 0.05달러의 구매력만 갖습니다. 즉 약 95% 이상의 구매력이 사라졌습니다. 연평균 약 4%의 인플레이션이 50년간 복리로 누적된 결과입니다.",
+      "미국 노동통계국(BLS) 데이터에 따르면 1971년의 1달러는 2025년 기준으로 약 0.05달러의 구매력만 갖습니다. 즉 약 95% 이상의 구매력이 사라졌습니다. 연평균 약 4%의 인플레이션이 50년간 복리로 누적된 결과입니다.",
   },
   {
     question: "비트코인이 칸티용 효과를 근본적으로 해결하는 방식은?",
     options: [
-      "비트코인은 중앙은행을 통해 공정하게 배분된다",
+      "비트코인은 국제 중앙은행 협의체를 통해 각국에 균등하게 배분되도록 설계되어 있다",
+      "비트코인은 네트워크 참여자 수에 비례해 모든 지갑 주소에 자동으로 균등 배분된다",
+      "비트코인은 각국 정부가 공동으로 관리해 특정 금융 기관의 우선 접근을 제도적으로 차단한다",
       "비트코인은 발행량 자체가 수학적으로 고정되어 있어 어떤 주체도 임의로 새 화폐를 발행할 수 없다",
-      "비트코인은 정부가 관리하므로 공정한 배분이 보장된다",
-      "비트코인은 모든 사용자에게 동일한 양이 자동으로 배분된다",
     ],
-    answer: 1,
+    answer: 3,
     explanation:
       "비트코인의 새 BTC는 작업증명(PoW) 채굴을 통해서만 발행됩니다. 채굴자는 전기와 장비라는 실물 비용을 지불해야 합니다. 어떤 중앙 권위도 비용 없이 BTC를 발행할 수 없기 때문에 칸티용 효과가 구조적으로 불가능합니다.",
   },
   {
     question: "인플레이션을 '은폐세(Hidden Tax)'라고 부르는 이유는?",
     options: [
-      "정부가 인플레이션을 공식 세금으로 분류하기 때문",
+      "정부 예산법에 인플레이션 조정분이 공식 조세 항목으로 명시되어 있기 때문",
+      "세금 납부액이 클수록 인플레이션 면제 혜택이 커져 두 효과가 서로 상쇄되기 때문",
       "인플레이션이 입법 절차 없이 화폐 보유자의 구매력을 조용히 이전하기 때문",
-      "세금과 인플레이션은 서로 상쇄 효과가 있기 때문",
-      "인플레이션은 부자에게만 부과되는 숨겨진 누진세이기 때문",
+      "인플레이션은 고소득층 자산에만 선택적으로 적용되는 숨겨진 누진 과세이기 때문",
     ],
-    answer: 1,
+    answer: 2,
     explanation:
       "일반 세금은 의회 승인이 필요하지만, 인플레이션(화폐 발행)은 중앙은행이 독자적으로 결정할 수 있습니다. 화폐 공급 증가는 기존 화폐 보유자의 구매력을 희석시켜 실질적으로 부를 이전합니다. 이 과정은 명세서 없이 발생하므로 '은폐세' 또는 '인플레이션세'라 불립니다.",
   },
   {
     question: "M2 통화량과 자산가격(주식, 부동산, 금)의 관계를 가장 정확하게 설명한 것은?",
     options: [
-      "M2와 자산가격은 완전히 독립적으로 움직인다",
-      "M2가 늘어나면 자산가격은 오히려 하락한다",
       "M2 증가로 발행된 화폐가 자산 시장에 유입되어 자산가격을 상승시키며, 이 혜택은 자산 보유자에게 집중된다",
-      "M2와 자산가격은 단기에만 상관관계가 있고 장기적으로는 무관하다",
+      "M2가 늘어나면 화폐 가치 상승으로 인해 자산가격은 오히려 하락하는 경향이 있다",
+      "M2와 자산가격은 각자 독립적인 요인에 의해 결정되며 체계적 상관관계가 없다",
+      "M2와 자산가격은 경기 사이클의 단기 구간에서만 동조하고 10년 이상 장기에서는 무관하다",
     ],
-    answer: 2,
+    answer: 0,
     explanation:
-      "1971년 이후 미국 M2는 약 40배, S&P500은 약 50배, 금은 약 50배, 주택가격은 약 7배 상승했습니다. 통화팽창으로 발행된 화폐는 먼저 금융 시스템에 진입하여 주식·채권·부동산 같은 자산을 매입하는 데 사용됩니다. 자산이 없는 사람은 상승하는 물가만 경험하며 상대적 빈곤이 심화됩니다.",
+      "1971년 이후 미국 M2는 약 33배, S&P500은 약 64배, 금은 약 81배, 주택가격은 약 15배 상승했습니다. 통화팽창으로 발행된 화폐는 먼저 금융 시스템에 진입하여 주식·채권·부동산 같은 자산을 매입하는 데 사용됩니다. 자산이 없는 사람은 상승하는 물가만 경험하며 상대적 빈곤이 심화됩니다.",
   },
 ];
 
@@ -520,7 +409,7 @@ export default function Ch02FiatProblem() {
 
       <p>
         닉슨 쇼크의 직접적 결과는 명확합니다.
-        1971년 이후 미국의 M2 통화량은 약 40배 증가했고,
+        1971년 이후 미국의 M2 통화량은 약 33배 증가했고,
         달러의 구매력은 95% 이상 하락했습니다.
         금 가격은 온스당 35달러에서 2,000달러를 넘어섰습니다.
       </p>
@@ -608,16 +497,12 @@ export default function Ch02FiatProblem() {
         일반 시민은 물가 상승이라는 비용만 부담한다.
       </InfoBox>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 p-3 text-sm mb-4">
-        <strong>참고:</strong> 이 시뮬레이션의 수치는 칸티용 효과를 직관적으로 설명하기 위한 개념적 근사값이며, 실제 경제 데이터 기반이 아닙니다.
-      </div>
-      <CantillonEffect />
 
       {/* ── 5. M2 공급량과 자산가격 ── */}
       <h2>5. M2 공급량과 자산가격: 숫자가 말하는 진실</h2>
       <p>
         1971년 이후의 데이터는 칸티용 효과를 생생하게 보여줍니다.
-        통화량이 40배 늘어나는 동안, 그 혜택은 자산 보유자에게 집중되었습니다.
+        통화량이 33배 늘어나는 동안, 그 혜택은 자산 보유자에게 집중되었습니다.
         주식과 부동산을 가진 사람은 수십 배의 명목 자산 증가를 경험했고,
         임금 소득자는 같은 기간 실질 임금 정체 속에서 오르는 집값을 바라봐야 했습니다.
       </p>
@@ -640,20 +525,14 @@ export default function Ch02FiatProblem() {
         비트코인 맥시멀리스트들이 비트코인을 단순한 투자 자산이 아닌 <strong>정치적 도구</strong>로
         보는 이유가 여기 있습니다. 법정화폐 시스템에서 탈출하는 것은
         단순한 재정적 선택이 아니라, 구조적 착취에서 자신을 지키는 행위입니다.
-      </p>
-
-      <KatexBlock
-        math={"\\text{Bitcoin Supply}(t) = \\sum_{n=0}^{\\lfloor t/210000 \\rfloor} 210000 \\cdot \\frac{50}{2^n}"}
-        display={true}
-      />
-      <p className="text-sm text-muted-foreground text-center -mt-2">
-        t = 블록 높이, 공급량은 수학적으로 결정되며 어떤 주체도 이를 변경할 수 없습니다.
+        비트코인의 공급량은 수학적으로 2,100만 BTC로 고정되어 있으며, 어떤 주체도 이를 변경할 수 없습니다.
+        이 공급 스케줄의 수학적 구조는 5장(희소성)에서 상세히 다룹니다.
       </p>
 
       <InfoBox type="info" title="'Fix the money, fix the world'">
         비트코인 커뮤니티의 슬로건은 과장이 아닙니다. 법정화폐 시스템의 구조적 결함—
         칸티용 효과, 인플레이션세, 통화팽창을 통한 부의 불평등—은
-        건전화폐(Sound Money)를 채택함으로써만 근본적으로 해결될 수 있습니다.
+        1장에서 다룬 건전화폐(Sound Money)를 채택함으로써만 근본적으로 해결될 수 있습니다.
         비트코인은 그 건전화폐의 디지털 구현입니다.
       </InfoBox>
 

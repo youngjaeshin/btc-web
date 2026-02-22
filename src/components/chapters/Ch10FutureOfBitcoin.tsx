@@ -24,27 +24,22 @@ function BitcoinStandardSection() {
         우연이 아닙니다.
       </p>
 
-      <InfoBox type="definition" title="건전화폐 (Sound Money)">
-        건전화폐란 공급량이 정치적 의사결정이 아닌 시장 원리(또는 알고리즘)에 의해
-        결정되는 화폐입니다. 금, 은, 그리고 비트코인이 그 예입니다. 반대로 법정화폐는
-        중앙은행 위원회의 투표로 공급이 결정됩니다.
-      </InfoBox>
-
       <p className="mb-3 mt-4">
-        아무스의 핵심 논지는 다음과 같습니다:
+        1장에서 다룬 건전화폐의 정의, 5장에서 분석한 절대적 희소성(2,100만 개 상한),
+        9장에서 탐구한 시간선호 이론을 토대로, 아무스의 핵심 논지를 정리하면:
       </p>
       <ul className="list-disc pl-6 space-y-2 mb-4">
         <li>
           <strong>건전화폐 → 낮은 시간선호 → 자본 축적</strong>: 저축 가치가 보존될 때
-          사람들은 미래를 위해 투자합니다. 자본 축적은 생산성 향상의 기반입니다.
+          사람들은 미래를 위해 투자합니다(9장 참고).
         </li>
         <li>
           <strong>불건전화폐 → 높은 시간선호 → 단기주의</strong>: 인플레이션은 저축을
-          처벌하고 부채를 장려합니다. 기업과 정부 모두 단기 실적에 집착하게 됩니다.
+          처벌하고 부채를 장려합니다(2장 참고).
         </li>
         <li>
-          <strong>비트코인 = 역사상 가장 건전한 화폐</strong>: 2,100만 개 절대 상한,
-          알고리즘 발행 스케줄, 검열 저항성. 금보다 우월한 특성을 갖습니다.
+          <strong>비트코인 = 역사상 가장 건전한 화폐</strong>: 5장에서 본 절대적 희소성과
+          알고리즘 발행 스케줄, 검열 저항성을 갖춘 디지털 건전화폐입니다.
         </li>
       </ul>
 
@@ -119,21 +114,10 @@ function SecurityModelSection() {
     <section className="mb-10">
       <h2 className="text-2xl font-bold mb-4">3. 보안 모델 장기 전망</h2>
       <p className="mb-3">
-        비트코인 채굴자는 블록을 생성할 때마다 <strong>블록 보상(Block Subsidy)</strong>과
-        <strong>수수료(Transaction Fees)</strong>를 받습니다. 반감기마다 블록 보상은
-        절반으로 줄어들고, 약 2140년이 되면 블록 보상이 0에 수렴합니다.
+        4장에서 다룬 것처럼 채굴자 수입은 블록 보조금과 수수료로 구성됩니다.
+        반감기(4장 4절)마다 보조금이 절반으로 줄어 약 2140년에 0에 수렴하므로,
+        장기적으로 수수료가 보안 예산의 핵심 원천이 됩니다. 7장의 수수료 시장도 참고하세요.
       </p>
-
-      <div className="my-4">
-        <p className="text-sm text-muted-foreground mb-1">채굴자 수입 구성</p>
-        <KatexBlock
-          math={"\\text{Miner Revenue} = \\underbrace{\\frac{50}{2^n} \\cdot P_{\\text{BTC}}}_{\\text{Block Subsidy}} + \\underbrace{\\sum_i \\text{fee}_i}_{\\text{Tx Fees}}"}
-          display={true}
-        />
-        <p className="text-xs text-muted-foreground mt-1">
-          n = 반감기 횟수, P_BTC = BTC 가격. 장기적으로 수수료가 보안 예산의 주요 원천이 됩니다.
-        </p>
-      </div>
 
       <p className="mb-3">
         이에 대해 두 가지 시각이 있습니다:
@@ -276,10 +260,8 @@ const fudItems = [
     title: "환경 파괴 주장",
     fud: "비트코인 채굴이 엄청난 에너지를 낭비하고 CO₂를 배출해 기후 위기를 악화시킵니다.",
     rebuttal: [
-      "비트코인 채굴은 에너지를 '낭비'하는 것이 아니라, 가장 비싼 에너지를 사용하는 경제 활동들 사이에서 경쟁합니다.",
-      "채굴은 재생에너지의 최적 고객입니다. 수력·태양광의 잉여 전력(curtailed energy)을 24시간 흡수합니다.",
-      "2023년 기준 비트코인 채굴의 약 50~70%가 재생에너지로 이루어진다는 추정이 있습니다.",
-      "금 채굴, 군사 산업, 크리스마스 조명보다 에너지 효율이 높다는 비교 연구도 있습니다.",
+      "4장 5절 '에너지 소비 논쟁'에서 상세히 다루었듯이, 비트코인 채굴은 에너지를 '낭비'하는 것이 아니라 경제적 경쟁 속에서 에너지를 소비합니다.",
+      "채굴은 재생에너지의 최적 고객으로, 잉여 전력(curtailed energy)을 24시간 흡수합니다(4장 참고).",
       "에너지 소비량 자체보다 그 에너지가 무엇을 구매하는지(검열 불가능한 글로벌 결제 시스템)가 중요합니다.",
     ],
   },
@@ -324,10 +306,9 @@ const fudItems = [
     title: "더 좋은 암호화폐가 나온다 주장",
     fud: "비트코인보다 기술적으로 더 뛰어난 코인이 나오면 비트코인은 구식이 됩니다.",
     rebuttal: [
-      "비트코인의 핵심 가치는 기술적 우월성이 아니라 탈중앙화·보안·네트워크 효과입니다.",
+      "7장에서 다룬 것처럼 비트코인의 핵심 가치는 기술적 우월성이 아니라 탈중앙화·보안·네트워크 효과입니다.",
       "인터넷 이후 더 빠른 프로토콜이 많이 나왔지만 TCP/IP를 대체하지 못했습니다.",
-      "비트코인은 가장 탈중앙화되고 가장 오래 검증된 블록체인입니다. 불변성 자체가 특성입니다.",
-      "대부분의 '비트코인 킬러'는 탈중앙화를 희생해 속도를 얻었습니다. 이는 다른 트레이드오프입니다.",
+      "대부분의 '비트코인 킬러'는 탈중앙화를 희생해 속도를 얻었습니다. 이는 다른 트레이드오프입니다(7장 5절 참고).",
       "15년 동안 수천 개의 경쟁자가 나왔고, 비트코인의 시장 지배력은 여전히 압도적입니다.",
     ],
   },
@@ -411,8 +392,8 @@ function PersonalJourneySection() {
         {[
           { step: "1단계", title: "공부하기", desc: "The Bitcoin Standard, 사토시 백서, 유튜브(Andreas Antonopoulos) 등으로 기초 이해. 가격이 아닌 원리를 먼저 이해합니다.", color: "border-blue-300 bg-blue-50 dark:bg-blue-950/20" },
           { step: "2단계", title: "DCA 시작", desc: "Dollar Cost Averaging — 매달 일정 금액을 자동으로 매수합니다. 가격 타이밍을 맞추려 하지 않습니다.", color: "border-amber-300 bg-amber-50 dark:bg-amber-950/20" },
-          { step: "3단계", title: "셀프 커스터디", desc: "'Not your keys, not your coins.' 하드웨어 지갑(Coldcard, Ledger 등)으로 자기 키를 직접 관리합니다.", color: "border-orange-300 bg-orange-50 dark:bg-orange-950/20" },
-          { step: "4단계", title: "풀노드 운영", desc: "자신의 노드를 운영해 거래를 직접 검증합니다. Raspberry Pi + Bitcoin Core로 저렴하게 시작할 수 있습니다.", color: "border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20" },
+          { step: "3단계", title: "셀프 커스터디", desc: "6장에서 배운 'Not your keys, not your coins' 원칙을 실천합니다. 하드웨어 지갑으로 자기 키를 직접 관리하세요(6장 참고).", color: "border-orange-300 bg-orange-50 dark:bg-orange-950/20" },
+          { step: "4단계", title: "풀노드 운영", desc: "7장에서 다룬 풀노드를 직접 운영해 거래를 검증합니다. Raspberry Pi + Bitcoin Core로 저렴하게 시작할 수 있습니다(7장 5절 참고).", color: "border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20" },
           { step: "5단계", title: "커뮤니티 참여", desc: "Bitcoin meetup, 컨퍼런스, 오픈소스 기여 등으로 비트코인 생태계에 기여합니다.", color: "border-purple-300 bg-purple-50 dark:bg-purple-950/20" },
         ].map((item) => (
           <div key={item.step} className={`rounded-lg border p-4 ${item.color}`}>
@@ -446,10 +427,10 @@ function DCASimulator() {
 
   // BTC price history anchors (approximate)
   const historicalPrices: Record<number, number> = {
-    2020: 29000, 2021: 47000, 2022: 16500, 2023: 42000, 2024: 94000,
+    2020: 29000, 2021: 47000, 2022: 16500, 2023: 42000, 2024: 94000, 2025: 87000,
   };
 
-  const currentYear = 2024;
+  const currentYear = 2026;
   const endYear = 2030;
 
   type DcaRow = { label: string; totalInvested: number; totalBTC: number; currentValue: number; avgCost: number };
@@ -466,20 +447,20 @@ function DCASimulator() {
         const prevYear = Math.floor(t);
         const nextYear = prevYear + 1;
         const frac = t - prevYear;
-        const p0 = historicalPrices[prevYear] ?? historicalPrices[2024];
-        const p1 = historicalPrices[nextYear] ?? historicalPrices[2024];
+        const p0 = historicalPrices[prevYear] ?? historicalPrices[2025];
+        const p1 = historicalPrices[nextYear] ?? historicalPrices[2025];
         btcPrice = p0 + (p1 - p0) * frac;
       } else {
         const yearsFromNow = t - currentYear;
-        btcPrice = historicalPrices[2024] * Math.pow(1 + annualGrowth / 100, yearsFromNow);
+        btcPrice = historicalPrices[2025] * Math.pow(1 + annualGrowth / 100, yearsFromNow);
       }
       totalBTC += monthlyUSD / btcPrice;
       totalInvested += monthlyUSD;
     }
     const endPrice =
       y <= currentYear
-        ? (historicalPrices[y] ?? historicalPrices[2024])
-        : historicalPrices[2024] * Math.pow(1 + annualGrowth / 100, y - currentYear);
+        ? (historicalPrices[y] ?? historicalPrices[2025])
+        : historicalPrices[2025] * Math.pow(1 + annualGrowth / 100, y - currentYear);
 
     rows.push({
       label: `${y}`,
@@ -495,7 +476,7 @@ function DCASimulator() {
       <h3 className="text-lg font-bold mb-4">시뮬레이션 ②: DCA(적립식 매수) 시뮬레이터</h3>
       <p className="text-sm text-muted-foreground mb-4">
         매달 일정 금액을 BTC에 적립했을 때의 누적 BTC와 자산 가치를 계산합니다.
-        2024년 이후는 연 성장률 가정에 따른 시뮬레이션입니다.
+        2026년 이후는 연 성장률 가정에 따른 시뮬레이션입니다.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
@@ -506,7 +487,7 @@ function DCASimulator() {
         </div>
         <div>
           <label className="text-sm font-medium">시작 연도: {startYear}년</label>
-          <Slider min={2020} max={2024} step={1} value={[startYear]}
+          <Slider min={2020} max={2025} step={1} value={[startYear]}
             onValueChange={([v]) => setStartYear(v)} className="mt-2" />
         </div>
         <div>
@@ -573,7 +554,7 @@ function DCASimulator() {
         ))}
       </div>
       <p className="text-xs text-muted-foreground mt-2 text-center">
-        * 2024년 이후 가격은 연 성장률 가정에 기반한 시뮬레이션이며, 투자 조언이 아닙니다.
+        * 2026년 이후 가격은 연 성장률 가정에 기반한 시뮬레이션이며, 투자 조언이 아닙니다.
       </p>
     </div>
   );
@@ -586,46 +567,46 @@ const quizQuestions = [
   {
     question: "사이페딘 아무스가 'The Bitcoin Standard'에서 주장한 핵심 테제는 무엇인가요?",
     options: [
-      "비트코인은 단기 투자 수단으로 최적이다",
+      "비트코인은 변동성이 높아 단기 차익 실현에 가장 적합한 투자 수단이다",
+      "모든 디지털 화폐는 발행 기술이 같으므로 경제적 가치도 동등하게 수렴한다",
+      "비트코인의 주목적은 중앙은행 시스템을 폐지하고 무정부 경제를 실현하는 것이다",
       "건전화폐가 문명을 번영시키며, 비트코인이 역사상 가장 건전한 화폐다",
-      "비트코인은 중앙은행을 없애는 것이 목적이다",
-      "디지털 화폐는 모두 동등한 가치를 가진다",
     ],
-    answer: 1,
+    answer: 3,
     explanation:
       "아무스는 역사적으로 건전한 화폐를 사용한 시대에 문명이 가장 크게 번영했음을 보여주고, 비트코인이 2,100만 개 고정 공급량 등으로 역사상 가장 건전한 화폐라고 주장합니다.",
   },
   {
     question: "하이퍼비트코이너화(Hyperbitcoinization)와 하이퍼인플레이션의 차이점은?",
     options: [
-      "하이퍼비트코이너화는 정부가 주도하는 전환이다",
-      "하이퍼인플레이션은 자발적 전환이고, 하이퍼비트코이너화는 강제적 전환이다",
       "하이퍼비트코이너화는 더 우월한 화폐로의 자발적 전환이고, 하이퍼인플레이션은 화폐 자체의 붕괴다",
-      "둘 다 동일한 현상을 다른 이름으로 부르는 것이다",
+      "하이퍼인플레이션은 사람들이 자발적으로 더 좋은 화폐를 선택하는 과정이고, 하이퍼비트코이너화는 강제적 전환이다",
+      "하이퍼비트코이너화는 중앙은행 정책 실패가 아닌 정부 주도로 이루어지는 전환이다",
+      "둘 다 법정화폐 구매력이 급락하는 동일한 현상을 서로 다른 관점에서 부르는 것이다",
     ],
-    answer: 2,
+    answer: 0,
     explanation:
       "하이퍼인플레이션은 법정화폐 가치가 급격히 붕괴하는 현상이고, 하이퍼비트코이너화는 더 우월한 화폐인 비트코인으로 자발적으로 전환하는 현상입니다. 후자는 강제가 아닌 선택입니다.",
   },
   {
     question: "비트코인 채굴자의 장기 수입은 무엇에서 올 것으로 전망되나요?",
     options: [
-      "블록 보조금만으로 충분하다",
+      "반감기마다 BTC 가격이 정확히 두 배씩 오르므로 블록 보조금만으로도 충분하다",
+      "각국 정부가 네트워크 보안 유지를 위해 채굴자에게 직접 보조금을 지급할 것이다",
       "트랜잭션 수수료가 주요 보안 예산 원천이 될 것이다",
-      "정부 보조금을 통해 보완될 것이다",
-      "채굴자 수가 줄어들면 문제가 해결된다",
+      "채굴자 수가 자연 감소하면 남은 채굴자가 더 많은 보조금을 가져가 문제가 해소된다",
     ],
-    answer: 1,
+    answer: 2,
     explanation:
       "반감기마다 블록 보조금은 절반으로 줄어 약 2140년에 0이 됩니다. 낙관론자들은 라이트닝 정산 등 블록 공간 수요 증가로 트랜잭션 수수료가 보안 예산의 주요 원천이 될 것이라고 봅니다.",
   },
   {
     question: "비트코인이 환경에 미치는 영향에 대한 비트코이너의 반론으로 가장 적절한 것은?",
     options: [
-      "비트코인 채굴은 아무런 에너지도 사용하지 않는다",
+      "비트코인 채굴은 전적으로 태양광·풍력으로만 운영되므로 탄소 배출이 전혀 없다",
       "채굴은 재생에너지의 잉여 전력을 흡수하는 최적의 고객이며, 재생에너지 비중이 높다",
-      "에너지 소비는 경제 발전에 무조건 나쁘지 않다",
-      "다른 산업도 에너지를 쓰므로 비트코인만 비판할 수 없다",
+      "에너지를 소비하는 모든 경제 활동은 그 자체로 정당하므로 채굴도 예외가 아니다",
+      "금융·군사 등 다른 산업이 더 많은 에너지를 쓰므로 비트코인을 먼저 규제해서는 안 된다",
     ],
     answer: 1,
     explanation:
@@ -634,46 +615,46 @@ const quizQuestions = [
   {
     question: "비트코인이 주로 범죄에 사용된다는 주장에 대한 반론으로 옳지 않은 것은?",
     options: [
-      "비트코인 블록체인은 완전히 투명해서 현금보다 추적이 쉽다",
+      "비트코인은 익명성이 완벽해 추적이 불가능하다",
       "전체 비트코인 거래 중 불법 거래 비중은 0.1~0.2% 수준이다",
       "범죄자들은 추적 불가능한 현금을 선호한다",
-      "비트코인은 익명성이 완벽해 추적이 불가능하다",
+      "비트코인 블록체인은 완전히 투명해서 현금보다 추적이 쉽다",
     ],
-    answer: 3,
+    answer: 0,
     explanation:
       "비트코인은 익명성이 완벽하지 않습니다. 퍼블릭 블록체인에 모든 거래가 영구 기록되어 현금보다 훨씬 추적하기 쉽습니다. 실제로 많은 비트코인 관련 범죄자가 블록체인 분석을 통해 검거되었습니다.",
   },
   {
     question: "오렌지 필링(Orange-pilling)이란?",
     options: [
-      "비트코인 가격이 급등하는 현상",
+      "비트코인 수요 급증으로 가격이 단기간에 급등하는 시장 현상",
+      "비트코인 채굴 효율을 높이기 위해 사용되는 특정 해시 알고리즘",
+      "비트코인 재단이 오렌지색 브랜드를 앞세워 진행하는 글로벌 홍보 캠페인",
       "누군가가 비트코인의 진정한 의미를 이해하고 확신을 갖게 되는 과정",
-      "비트코인을 오렌지색으로 홍보하는 마케팅 캠페인",
-      "비트코인 채굴에 사용되는 특정 알고리즘",
     ],
-    answer: 1,
+    answer: 3,
     explanation:
       "오렌지 필링은 영화 매트릭스의 '빨간 약' 개념에서 유래한 용어로, 비트코인의 화폐적·철학적 의미를 진정으로 이해하게 되는 순간이나 과정을 가리킵니다.",
   },
   {
     question: "DCA(Dollar Cost Averaging)가 비트코인 축적 전략으로 권장되는 이유는?",
     options: [
-      "항상 최저가에 매수할 수 있기 때문에",
+      "매수 시점을 알고리즘이 자동 계산해 항상 최저가에 매수할 수 있기 때문에",
+      "정기적 소액 매수는 거래소 수수료 우대 혜택을 받아 비용이 절감되기 때문에",
       "가격 타이밍을 맞추려는 스트레스 없이 장기적으로 평균 단가를 낮출 수 있기 때문에",
-      "한 번에 대량 매수보다 수수료가 낮기 때문에",
-      "정부 규제를 피할 수 있기 때문에",
+      "분산 매수 방식이 거래 내역을 분산시켜 정부 과세 추적을 어렵게 하기 때문에",
     ],
-    answer: 1,
+    answer: 2,
     explanation:
       "DCA는 가격 타이밍을 맞추려는 심리적 스트레스를 없애고, 가격이 높을 때는 적게 사고 낮을 때는 많이 사는 자연스러운 평균 단가 낮추기 효과를 제공합니다. 장기 보유자에게 권장되는 전략입니다.",
   },
   {
     question: "'더 좋은 암호화폐가 비트코인을 대체할 것'이라는 주장에 대한 비트코이너의 반론으로 가장 핵심적인 것은?",
     options: [
-      "비트코인이 기술적으로 가장 우월하기 때문에 대체 불가능하다",
+      "비트코인은 처리 속도·스마트 컨트랙트 등 모든 기술 지표에서 경쟁 코인보다 우월하다",
       "비트코인의 핵심 가치는 기술이 아닌 탈중앙화·보안·네트워크 효과이며, 이는 쉽게 복사할 수 없다",
-      "다른 코인들은 모두 사기이므로 경쟁이 될 수 없다",
-      "법적으로 다른 코인의 사용이 금지되어 있다",
+      "경쟁 코인들은 대부분 창업자가 초기 물량을 독점해 구조적으로 사기에 해당한다",
+      "주요국 금융당국이 비트코인 외 다른 암호화폐의 결제 사용을 법적으로 제한하고 있다",
     ],
     answer: 1,
     explanation:

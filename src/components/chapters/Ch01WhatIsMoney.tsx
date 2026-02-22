@@ -21,49 +21,31 @@ const RADAR_DATA: Record<string, { scores: number[]; color: string }> = {
 };
 
 function MoneyRadarChart() {
-  const [visible, setVisible] = useState<Record<string, boolean>>({
-    조개껍데기: true,
-    금: true,
-    달러: true,
-    비트코인: true,
-  });
-
-  const toggle = (key: string) =>
-    setVisible((prev) => ({ ...prev, [key]: !prev[key] }));
-
-  const traces = Object.entries(RADAR_DATA)
-    .filter(([key]) => visible[key])
-    .map(([name, { scores, color }]) => ({
-      type: "scatterpolar" as const,
-      r: [...scores, scores[0]],
-      theta: [...MONEY_ATTRIBUTES, MONEY_ATTRIBUTES[0]],
-      fill: "toself" as const,
-      name,
-      line: { color },
-      fillcolor: color + "33",
-    }));
+  const traces = Object.entries(RADAR_DATA).map(([name, { scores, color }]) => ({
+    type: "scatterpolar" as const,
+    r: [...scores, scores[0]],
+    theta: [...MONEY_ATTRIBUTES, MONEY_ATTRIBUTES[0]],
+    fill: "toself" as const,
+    name,
+    line: { color },
+    fillcolor: color + "33",
+  }));
 
   return (
     <div className="my-8">
       <h3 className="text-lg font-semibold mb-3">화폐 속성 비교 레이더 차트</h3>
       <p className="text-sm text-muted-foreground mb-4">
-        각 화폐 형태를 5가지 속성 기준(1–10점)으로 비교합니다. 항목을 토글해 비교해 보세요.
+        각 화폐 형태를 5가지 속성 기준(1–10점)으로 비교합니다.
       </p>
       <div className="flex flex-wrap gap-2 mb-4">
         {Object.entries(RADAR_DATA).map(([name, { color }]) => (
-          <button
+          <span
             key={name}
-            onClick={() => toggle(name)}
-            className="px-3 py-1 rounded-full border text-sm font-medium transition-opacity"
-            style={{
-              borderColor: color,
-              color: visible[name] ? "#fff" : color,
-              backgroundColor: visible[name] ? color : "transparent",
-              opacity: visible[name] ? 1 : 0.5,
-            }}
+            className="px-3 py-1 rounded-full text-sm font-medium text-white"
+            style={{ backgroundColor: color }}
           >
             {name}
-          </button>
+          </span>
         ))}
       </div>
       <Plot
@@ -192,18 +174,7 @@ function InflationSimulator() {
 function BarterSimulation() {
   const [numPeople, setNumPeople] = useState(10);
 
-  // P(두 특정 사람이 서로의 물건을 원할 확률) = 1/(n-1)^2
-  // P(시장 전체에서 최소 1쌍 매칭) ≈ 1 - (1 - 1/(n-1)^2)^(n*(n-1)/2)
-  const calcMatchProb = (n: number) => {
-    if (n < 2) return 0;
-    const pairwise = (1 / Math.pow(n - 1, 2));
-    const totalPairs = (n * (n - 1)) / 2;
-    return (1 - Math.pow(1 - pairwise, totalPairs)) * 100;
-  };
-
   const nRange = Array.from({ length: 49 }, (_, i) => i + 2);
-  const probCurve = nRange.map((n) => calcMatchProb(n));
-  const currentProb = calcMatchProb(numPeople);
   const singleProb = numPeople > 1 ? (1 / Math.pow(numPeople - 1, 2)) * 100 : 100;
 
   return (
@@ -211,7 +182,7 @@ function BarterSimulation() {
       <h3 className="text-lg font-semibold mb-3">물물교환 이중 일치 시뮬레이션</h3>
       <p className="text-sm text-muted-foreground mb-4">
         N명의 참여자가 각각 다른 물건을 갖고 서로 다른 물건을 원할 때,
-        임의의 두 사람이 서로의 물건을 원하는 이중 일치가 성사될 확률을 계산합니다.
+        특정 두 사람이 서로의 물건을 원하는 이중 일치가 성사될 확률을 계산합니다.
       </p>
       <div className="mb-4">
         <label className="text-sm font-medium block mb-2">
@@ -225,53 +196,38 @@ function BarterSimulation() {
           onValueChange={([v]) => setNumPeople(v)}
         />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <Card className="p-4 text-center">
-          <p className="text-xs text-muted-foreground mb-1">특정 두 사람이 서로 원할 확률</p>
-          <p className="text-2xl font-bold text-red-500">{singleProb.toFixed(2)}%</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            참여자가 늘수록 원하는 상대를 찾기 어려워짐
-          </p>
-        </Card>
-        <Card className="p-4 text-center">
-          <p className="text-xs text-muted-foreground mb-1">시장 내 최소 1쌍 매칭 확률</p>
-          <p className="text-2xl font-bold text-orange-500">{currentProb.toFixed(1)}%</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            쌍이 많아져도 개인 입장에선 여전히 낮음
-          </p>
-        </Card>
-      </div>
+      <Card className="p-4 text-center mb-4">
+        <p className="text-xs text-muted-foreground mb-1">특정 두 사람이 서로 원할 확률</p>
+        <p className="text-2xl font-bold text-red-500">{singleProb.toFixed(2)}%</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          = 1/(N−1)² — 참여자가 늘수록 원하는 상대를 찾기가 급격히 어려워짐
+        </p>
+      </Card>
       <Plot
         data={[
-          {
-            x: nRange,
-            y: probCurve,
-            type: "scatter",
-            mode: "lines",
-            name: "시장 내 최소 1쌍 매칭 확률",
-            line: { color: "#a78bfa", width: 2 },
-          },
           {
             x: nRange,
             y: nRange.map((n) => (n > 1 ? (1 / Math.pow(n - 1, 2)) * 100 : 100)),
             type: "scatter",
             mode: "lines",
-            name: "특정 두 사람이 서로 원할 확률",
-            line: { color: "#f43f5e", width: 2, dash: "dot" },
+            name: "이중 일치 확률 1/(N−1)²",
+            line: { color: "#f43f5e", width: 2.5 },
+            fill: "tozeroy",
+            fillcolor: "rgba(244,63,94,0.1)",
           },
           {
             x: [numPeople],
-            y: [currentProb],
+            y: [singleProb],
             type: "scatter",
             mode: "markers",
-            name: "현재 설정",
-            marker: { color: "#f97316", size: 10 },
+            name: `현재: ${numPeople}명 (${singleProb.toFixed(2)}%)`,
+            marker: { color: "#f97316", size: 12, line: { color: "#fff", width: 2 } },
           },
         ]}
         layout={{
-          title: { text: "참여자 수에 따른 물물교환 성사 확률" },
+          title: { text: "참여자 수에 따른 이중 일치 확률" },
           xaxis: { title: { text: "시장 참여자 수 (명)" } },
-          yaxis: { title: { text: "성사 확률 (%)" }, range: [0, 100] },
+          yaxis: { title: { text: "이중 일치 확률 (%)" }, range: [0, 105] },
           height: 360,
           margin: { t: 50, b: 50, l: 60, r: 30 },
           paper_bgcolor: "rgba(0,0,0,0)",
@@ -297,12 +253,12 @@ const QUIZ_QUESTIONS = [
   {
     question: "물물교환 경제의 근본적인 문제인 '이중 일치 문제(Double Coincidence of Wants)'란 무엇인가?",
     options: [
-      "두 사람이 동시에 같은 물건을 원하는 현상",
       "거래 당사자 모두가 상대방의 물건을 원해야 교환이 성사되는 문제",
+      "두 사람이 동시에 같은 물건을 원하는 현상",
       "두 개의 상품을 동시에 구매해야 하는 제약",
       "화폐가 두 가지 기능을 동시에 수행해야 하는 문제",
     ],
-    answer: 1,
+    answer: 0,
     explanation:
       "이중 일치 문제는 A가 B의 물건을 원하고, B도 A의 물건을 원해야만 교환이 성사되는 조건입니다. 참여자가 많아질수록 이 조건이 맞는 상대를 찾기가 극도로 어려워집니다.",
   },
@@ -311,10 +267,10 @@ const QUIZ_QUESTIONS = [
     options: [
       "정부의 법적 보증(법정통화 지위)",
       "발행 주체의 신뢰도",
-      "임의적 조작이 불가능한 희소성",
       "물리적 내구성",
+      "임의적 조작이 불가능한 희소성",
     ],
-    answer: 2,
+    answer: 3,
     explanation:
       "건전화폐의 핵심은 누구도 임의로 공급을 늘릴 수 없는 희소성입니다. 금이 수천 년간 화폐로 기능한 이유도 채굴 비용 때문에 공급 증가가 제한적이었기 때문입니다. 비트코인은 이를 수학적으로 보장합니다.",
   },
@@ -322,69 +278,69 @@ const QUIZ_QUESTIONS = [
     question: "화폐의 5가지 속성 중 비트코인이 금보다 명확히 우위에 있는 속성은?",
     options: [
       "내구성(Durability)",
-      "희소성(Scarcity)",
       "휴대성(Portability)과 분할성(Divisibility)",
+      "희소성(Scarcity)",
       "검증가능성(Verifiability)",
     ],
-    answer: 2,
+    answer: 1,
     explanation:
       "비트코인은 인터넷만 있으면 즉시 전 세계로 전송 가능(휴대성)하고, 1사토시(0.00000001 BTC)까지 분할(분할성)됩니다. 금은 물리적 이동과 분할에 큰 비용이 따릅니다.",
   },
   {
-    question: "닉슨 대통령이 1971년 금태환을 정지하기 전, 브레턴우즈 체제에서 달러의 역할은?",
+    question: "금이 수천 년간 화폐로 사용된 핵심 이유를 화폐 속성 관점에서 가장 잘 설명한 것은?",
     options: [
-      "달러는 석유와 연동되어 있었다",
-      "달러는 금 1온스 = 35달러 비율로 금과 태환 가능했다",
-      "달러는 유로와 고정 환율을 유지했다",
-      "달러는 각국 GDP에 연동되어 발행량이 결정되었다",
+      "왕과 귀족이 금을 법적으로 화폐로 지정하고 유통을 강제했기 때문이다",
+      "금은 산업적 용도가 많아 실질적인 사용 가치가 다른 금속보다 높았기 때문이다",
+      "금은 내구성·희소성·분할성·검증가능성을 동시에 갖춘 자연 원소이기 때문이다",
+      "금이 가장 먼저 발견된 금속이라 화폐 역할을 자연스럽게 선점했기 때문이다",
     ],
-    answer: 1,
+    answer: 2,
     explanation:
-      "브레턴우즈 체제(1944–1971)에서 달러는 금 1온스 = 35달러 비율로 금과 태환이 보장된 기축통화였습니다. 닉슨 쇼크로 이 연결이 끊기면서 달러는 아무 실물 자산과도 연동되지 않은 순수 법정화폐가 되었습니다.",
+      "금은 부식되지 않는 내구성, 지각 내 제한된 매장량에서 오는 희소성, 정밀 분할이 가능한 물리적 특성, 비중과 색택으로 진위를 확인할 수 있는 검증가능성을 동시에 갖추고 있어 시장에서 자연스럽게 화폐로 선택되었습니다.",
   },
   {
     question: "화폐 역사에서 금속 화폐가 조개껍데기나 기타 원시 화폐를 대체한 가장 큰 이유는?",
     options: [
-      "정부가 금속 화폐만 법적으로 허용했기 때문",
-      "금속이 더 아름다웠기 때문",
       "금속은 내구성·희소성·분할성·검증가능성이 뛰어났기 때문",
-      "금속 화폐가 먼저 발명된 역사적 우연",
+      "조개껍데기보다 금속의 외관이 더 권위 있어 보였기 때문",
+      "고대 제국들이 조약을 통해 금속 화폐만 공식 인정했기 때문",
+      "금속이 다른 소재보다 먼저 발견되어 화폐 역할을 선점했기 때문",
     ],
-    answer: 2,
+    answer: 0,
     explanation:
       "금속(특히 금과 은)은 부식되지 않는 내구성, 안정적 희소성, 정밀 분할 가능성, 비중·색으로 진위 확인 가능한 검증가능성을 갖추어 시장에서 자연스럽게 선택되었습니다.",
   },
   {
     question: "비트코인의 '검증가능성(Verifiability)'이 금이나 법정화폐와 다른 점은?",
     options: [
-      "비트코인은 정부기관이 진위를 보증한다",
-      "비트코인은 누구나 풀노드를 실행해 전체 공급량과 거래를 직접 검증할 수 있다",
-      "비트코인은 거래소가 보증하므로 더 신뢰할 수 있다",
-      "비트코인은 블록체인 외부의 감사기관이 검증한다",
+      "공인된 정부기관이 비트코인의 진위와 수량을 공식적으로 보증한다",
+      "독립적인 국제 감사기관이 블록체인 외부에서 정기적으로 감사한다",
+      "등록된 거래소들이 공동으로 잔액과 거래 내역을 보증하고 공시한다",
+      "누구나 풀노드를 실행해 전체 공급량과 거래를 직접 검증할 수 있다",
     ],
-    answer: 1,
+    answer: 3,
     explanation:
       "비트코인의 풀노드는 누구나 실행 가능하며, 전체 2,100만 개 공급 상한과 모든 거래 내역을 제3자 신뢰 없이 직접 검증할 수 있습니다. 금은 정밀 기기가 필요하고, 달러는 중앙은행의 신뢰에 의존합니다.",
   },
   {
-    question: "오스트리안 경제학에서 '시간선호(Time Preference)'와 건전화폐의 관계는?",
+    question: "법정화폐와 비교해 비트코인의 '희소성(Scarcity)' 속성이 근본적으로 다른 이유는?",
     options: [
-      "인플레이션 화폐는 시간선호를 낮춰 더 많은 저축을 유도한다",
-      "건전화폐는 시간선호를 낮춰 장기 저축과 자본 형성을 장려한다",
-      "시간선호는 화폐 종류와 관계없이 일정하다",
-      "법정화폐가 시간선호를 낮추는 데 더 효과적이다",
+      "비트코인은 채굴 비용이 높아 대량 생산이 경제적으로 불가능하기 때문이다",
+      "비트코인은 프로토콜 코드에 의해 총 발행량 상한이 수학적으로 고정되어 있기 때문이다",
+      "각국 중앙은행이 비트코인 발행량을 규제할 수 없어 통제가 불가능하기 때문이다",
+      "비트코인 네트워크 참여자들이 투표로 발행량을 매년 결정하기 때문이다",
     ],
     answer: 1,
     explanation:
-      "건전화폐는 구매력을 유지하므로 미래 소비를 위한 저축이 합리적 선택이 됩니다. 반면 인플레이션 화폐는 '지금 써라'는 유인을 만들어 시간선호를 높이고, 자본 형성과 장기 투자를 억제합니다.",
+      "법정화폐는 중앙은행이 필요에 따라 무한히 발행할 수 있지만, 비트코인은 프로토콜 코드에 2,100만 개 상한이 내장되어 있어 누구도 이를 변경할 수 없습니다. 이것이 프로그래밍된 희소성이며, 역사상 처음으로 발행 규칙이 수학적으로 보장된 화폐입니다.",
   },
   {
     question: "비트코인이 역사상 처음으로 해결한 '디지털 희소성'의 핵심 문제는?",
     options: [
-      "디지털 파일의 해킹 위험",
-      "인터넷 속도의 한계",
+      "암호화가 불완전해 디지털 자산이 해킹에 취약하다는 문제",
+      "인터넷 대역폭 한계로 전송 속도가 물리적 화폐보다 느리다는 문제",
       "디지털 데이터는 무한 복사가 가능해 희소성을 만들 수 없다는 문제",
-      "디지털 화폐의 규제 승인 문제",
+      "각국 정부의 규제 승인 없이는 디지털 화폐가 법적 효력을 가질 수 없다는 문제",
     ],
     answer: 2,
     explanation:
@@ -502,14 +458,14 @@ export default function Ch01WhatIsMoney() {
           {
             era: "1944년",
             name: "금본위제 (브레턴우즈 체제)",
-            desc: "금의 직접 운반 없이 금으로 태환 가능한 지폐를 사용. 금 1온스 = 35달러로 태환 보장, 각국 중앙은행만 달러를 금으로 태환 가능한 국제 고정환율 체제. 국제 무역이 폭발적으로 성장했으나, 정부의 과도한 지출로 결국 붕괴했습니다.",
+            desc: "금의 직접 운반 없이 금으로 태환 가능한 지폐를 사용. 금 1온스 = 35달러로 태환 보장. 정부의 과도한 지출로 결국 붕괴했습니다. (자세한 내용은 2장 닉슨 쇼크 참고)",
             tag: "금태환 보증, 1971년 붕괴",
             tagColor: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
           },
           {
             era: "1971년~현재",
             name: "법정화폐 (Fiat Money)",
-            desc: "금태환 없이 정부의 권위만으로 가치가 부여되는 화폐. 중앙은행이 무제한으로 발행 가능하여 희소성 속성이 완전히 사라졌습니다. 지난 50년간 달러 구매력은 95% 이상 하락했습니다.",
+            desc: "금태환 없이 정부의 권위만으로 가치가 부여되는 화폐. 중앙은행이 무제한으로 발행 가능하여 희소성 속성이 완전히 사라졌습니다. 법정화폐의 구조적 문제점은 2장에서 상세히 분석합니다.",
             tag: "희소성 속성 파괴",
             tagColor: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
           },
@@ -596,16 +552,10 @@ export default function Ch01WhatIsMoney() {
       </p>
 
       <InfoBox type="info" title="건전화폐의 수학: 비트코인의 발행 공식">
-        비트코인의 블록 보상은 매 210,000블록(약 4년)마다 절반으로 줄어듭니다.
+        비트코인의 블록 보상은 매 210,000블록(약 4년)마다 절반으로 줄어들며,
+        총 발행량은 수학적으로 정확히 2,100만 BTC에 수렴합니다.
+        이 반감기 메커니즘과 공급 공식의 수학적 유도는 5장(희소성)에서 자세히 다룹니다.
       </InfoBox>
-
-      <KatexBlock
-        math={"\\text{Total Supply} = \\sum_{n=0}^{32} 210000 \\times \\frac{50}{2^n} \\approx 21{,}000{,}000 \\text{ BTC}"}
-        display={true}
-      />
-      <p className="text-sm text-muted-foreground text-center -mt-2">
-        (총 공급량 공식: 블록 보상 반감기 합산)
-      </p>
 
       <p>
         역사는 건전화폐를 포기한 문명이 어떤 결말을 맞았는지 반복해서 보여줍니다.
