@@ -348,29 +348,63 @@ function SupplyCurveSim() {
 }
 
 // ---------------------------------------------------------------------------
-// Simulation 3: Inflation rate comparison
+// Simulation 3: Inflation rate comparison (year-by-year accurate calculation)
 // ---------------------------------------------------------------------------
-function InflationComparisonSim() {
-  // Historical BTC inflation by epoch year (approximate)
-  const btcYears: number[] = [];
-  const btcInflation: number[] = [];
 
-  for (let e = 0; e <= 10; e++) {
-    const yr = epochYear(e);
-    btcYears.push(yr);
-    btcInflation.push(btcInflationRate(e));
+/** Compute BTC year-by-year inflation from 2010 to 2040 */
+function computeBtcYearlyInflation(): { years: number[]; rates: number[] } {
+  // Halving events: month (1-indexed) when halving occurred
+  const halvings: Record<number, number> = {
+    2012: 11, // Nov 28
+    2016: 7,  // Jul 9
+    2020: 5,  // May 11
+    2024: 4,  // Apr 20
+    2028: 4,  // estimated
+    2032: 4,
+    2036: 4,
+    2040: 4,
+  };
+
+  const BLOCKS_PER_YEAR = 52_560; // 144 blocks/day × 365
+  const years: number[] = [];
+  const rates: number[] = [];
+
+  let supply = 2_628_000; // approx supply at end of 2009 (first year of mining)
+  let reward = 50;
+
+  for (let year = 2010; year <= 2040; year++) {
+    let newSupply: number;
+
+    if (year in halvings) {
+      const monthOfHalving = halvings[year];
+      const fractionBefore = (monthOfHalving - 1) / 12;
+      const blocksBefore = Math.round(BLOCKS_PER_YEAR * fractionBefore);
+      const blocksAfter = BLOCKS_PER_YEAR - blocksBefore;
+      newSupply = blocksBefore * reward + blocksAfter * (reward / 2);
+      reward = reward / 2;
+    } else {
+      newSupply = BLOCKS_PER_YEAR * reward;
+    }
+
+    const rate = (newSupply / supply) * 100;
+    years.push(year);
+    rates.push(Math.round(rate * 10) / 10);
+    supply += newSupply;
   }
-  // Extend slightly after last epoch shown
-  btcYears.push(2049);
-  btcInflation.push(btcInflationRate(10));
 
-  // USD inflation — roughly 2-3% target but actual ~4-8% post-2020
-  const usdYears = [2009, 2012, 2016, 2020, 2021, 2022, 2023, 2024, 2028];
-  const usdInflation = [2.7, 1.7, 1.3, 1.2, 4.7, 8.0, 3.4, 3.2, 2.5];
+  return { years, rates };
+}
 
-  // Gold inflation — ~1.5-2% per year historically
-  const goldYears = [2009, 2024, 2049];
-  const goldInflation = [1.7, 1.5, 1.6];
+function InflationComparisonSim() {
+  const { years: btcYears, rates: btcInflation } = computeBtcYearlyInflation();
+
+  // USD CPI inflation (source: U.S. Bureau of Labor Statistics, CPI-U annual average)
+  const usdYears =      [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+  const usdInflation =  [ 1.6,  3.2,  2.1,  1.5,  1.6,  0.1,  1.3,  2.1,  2.4,  1.8,  1.2,  4.7,  8.0,  4.1,  2.9,  2.5];
+
+  // Gold supply inflation (source: World Gold Council, annual mine production / above-ground stock)
+  const goldYears =     [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+  const goldInflation = [ 1.7,  1.7,  1.7,  1.6,  1.6,  1.6,  1.6,  1.5,  1.5,  1.5,  1.5,  1.5,  1.4,  1.4,  1.4,  1.4];
 
   const data = [
     {
@@ -380,24 +414,25 @@ function InflationComparisonSim() {
       mode: "lines+markers" as const,
       name: "BTC",
       line: { color: "#f97316", width: 3 },
-      marker: { size: 6 },
+      marker: { size: 5 },
     },
     {
       x: usdYears,
       y: usdInflation,
       type: "scatter" as const,
       mode: "lines+markers" as const,
-      name: "USD (미국 달러)",
+      name: "USD (미국 CPI)",
       line: { color: "#ef4444", width: 2, dash: "dot" as const },
-      marker: { size: 5 },
+      marker: { size: 4 },
     },
     {
       x: goldYears,
       y: goldInflation,
       type: "scatter" as const,
-      mode: "lines" as const,
+      mode: "lines+markers" as const,
       name: "금 (Gold)",
       line: { color: "#eab308", width: 2, dash: "dash" as const },
+      marker: { size: 4 },
     },
   ];
 
@@ -405,17 +440,25 @@ function InflationComparisonSim() {
     title: { text: "연간 인플레이션율 비교: BTC vs USD vs 금" },
     xaxis: {
       title: { text: "연도" },
-      range: [2009, 2049],
+      range: [2010, 2041],
     },
     yaxis: {
       title: { text: "연간 인플레이션율 (%)" },
-      range: [0, 30],
+      type: "log" as const,
+      range: [-0.3, 2.1], // log10(0.5) to log10(120)
+      dtick: 1,
     },
     plot_bgcolor: "rgba(0,0,0,0)",
     paper_bgcolor: "rgba(0,0,0,0)",
     font: { size: 12 },
     margin: { t: 60, b: 60, l: 60, r: 20 },
-    legend: { x: 0.6, y: 0.9 },
+    legend: { x: 0.6, y: 0.95 },
+    annotations: [
+      { x: 2012, y: Math.log10(30.6), text: "1차 반감기", showarrow: true, arrowhead: 2, ax: 30, ay: -25, font: { size: 10 } },
+      { x: 2016, y: Math.log10(6.9), text: "2차", showarrow: true, arrowhead: 2, ax: 25, ay: -20, font: { size: 10 } },
+      { x: 2020, y: Math.log10(2.5), text: "3차", showarrow: true, arrowhead: 2, ax: 25, ay: -20, font: { size: 10 } },
+      { x: 2024, y: Math.log10(1.1), text: "4차", showarrow: true, arrowhead: 2, ax: 25, ay: -20, font: { size: 10 } },
+    ],
   };
 
   return (
@@ -424,6 +467,7 @@ function InflationComparisonSim() {
       <p className="text-sm text-muted-foreground mb-3">
         BTC의 인플레이션율은 반감기마다 계단식으로 절반으로 줄어듭니다.
         USD는 꾸준히 양(+)의 인플레이션을 유지하고, 금은 약 1.5~2%를 유지합니다.
+        (로그 스케일 — 초기 100%에서 현재 0.8%까지의 극적인 감소를 확인하세요)
       </p>
       <Plot
         data={data}
@@ -431,8 +475,16 @@ function InflationComparisonSim() {
         config={{ displayModeBar: false, responsive: true }}
       />
       <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg text-sm">
-        <strong>핵심:</strong> BTC의 인플레이션율은 프로그래밍된 스케줄에 따라 정확히 예측 가능하며,
-        장기적으로 0%에 수렴합니다. 어떤 중앙은행의 결정도 이를 바꿀 수 없습니다.
+        <strong>핵심:</strong> 2010년 BTC 인플레이션율은 100%(기존 공급량 대비 같은 양이 새로 채굴)이었지만,
+        4번의 반감기를 거쳐 2025년 현재 약 0.8%로 금(1.4%)보다도 낮아졌습니다.
+        BTC의 인플레이션율은 프로그래밍된 스케줄에 따라 정확히 예측 가능하며, 장기적으로 0%에 수렴합니다.
+      </div>
+      <div className="mt-2 text-[10px] text-muted-foreground space-y-0.5">
+        <div><strong>데이터 출처:</strong></div>
+        <div>• BTC: 블록 보상 스케줄 기반 수학적 계산 (연간 신규 발행량 / 기존 공급량 × 100)</div>
+        <div>• USD: U.S. Bureau of Labor Statistics, CPI-U 연평균 (2010–2025)</div>
+        <div>• 금: World Gold Council, 연간 채굴량 / 지상 총 재고량 (2010–2025)</div>
+        <div className="italic">※ USD와 금은 과거 실측 데이터만 표시. BTC는 프로토콜에 의해 확정된 미래 스케줄까지 표시.</div>
       </div>
     </Card>
   );
