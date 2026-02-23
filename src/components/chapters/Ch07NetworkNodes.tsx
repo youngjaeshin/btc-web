@@ -52,6 +52,10 @@ const initialTxs: MempoolTx[] = [
   makeTx("tx-006", 8, 1000),
   makeTx("tx-007", 55, 200),
   makeTx("tx-008", 30, 300),
+  makeTx("tx-009", 3, 250),
+  makeTx("tx-010", 65, 180),
+  makeTx("tx-011", 12, 400),
+  makeTx("tx-012", 95, 140),
 ];
 
 function MempoolSimulator() {
@@ -59,12 +63,10 @@ function MempoolSimulator() {
   const [txs, setTxs] = useState<MempoolTx[]>(initialTxs);
   const [minedCount, setMinedCount] = useState(0);
   const [log, setLog] = useState<string[]>([]);
-
-  const BLOCK_WEIGHT_LIMIT = 4_000_000; // weight units
-  const vbToWeight = (vb: number) => vb * 4;
+  const [blockCapacity] = useState(1200); // vB — 의도적으로 작게 설정하여 선택/탈락 시각화
 
   const addTx = () => {
-    const rates = [5, 10, 20, 40, 80, 150, 300];
+    const rates = [3, 5, 10, 20, 40, 80, 150, 300];
     const sizes = [140, 200, 250, 300, 500];
     const feeRate = rates[Math.floor(Math.random() * rates.length)];
     const size = sizes[Math.floor(Math.random() * sizes.length)];
@@ -73,28 +75,40 @@ function MempoolSimulator() {
     setLog((prev) => [`+ ${id} 추가 (${feeRate} sat/vB, ${size} vB)`, ...prev.slice(0, 9)]);
   };
 
-  const mineBlock = () => {
-    const pending = txs.filter((t) => !t.inBlock).sort((a, b) => b.feeRate - a.feeRate);
-    let usedWeight = 0;
+  // Determine which pending txs would be selected for next block
+  const getBlockSelection = (pendingTxs: MempoolTx[]) => {
+    const sorted = [...pendingTxs].sort((a, b) => b.feeRate - a.feeRate);
+    let usedVb = 0;
     const selected: string[] = [];
-    for (const tx of pending) {
-      const w = vbToWeight(tx.size);
-      if (usedWeight + w <= BLOCK_WEIGHT_LIMIT) {
-        usedWeight += w;
+    for (const tx of sorted) {
+      if (usedVb + tx.size <= blockCapacity) {
+        usedVb += tx.size;
         selected.push(tx.id);
       }
     }
+    return { selected, usedVb };
+  };
+
+  const mineBlock = () => {
+    const pending = txs.filter((t) => !t.inBlock);
+    const { selected } = getBlockSelection(pending);
     if (selected.length === 0) {
       setLog((prev) => ["멤풀이 비어있습니다.", ...prev.slice(0, 9)]);
       return;
     }
     const selectedTxs = pending.filter((t) => selected.includes(t.id));
+    const rejectedTxs = pending.filter((t) => !selected.includes(t.id));
     const totalFee = selectedTxs.reduce((s, t) => s + t.totalFee, 0);
+    const minFeeIncluded = Math.min(...selectedTxs.map((t) => t.feeRate));
+
     setTxs((prev) => prev.map((t) => (selected.includes(t.id) ? { ...t, inBlock: true } : t)));
     setMinedCount((c) => c + 1);
     setLog((prev) => [
-      `블록 #${minedCount + 1} 채굴: ${selected.length}개 tx, 총 수수료 ${totalFee.toLocaleString()} sat`,
-      ...prev.slice(0, 9),
+      `⛏ 블록 #${minedCount + 1}: ${selected.length}개 포함 (최소 ${minFeeIncluded} sat/vB), 수수료 ${totalFee.toLocaleString()} sat`,
+      ...(rejectedTxs.length > 0
+        ? [`  ↳ ${rejectedTxs.length}개 탈락 — 수수료 부족으로 멤풀에 남음`]
+        : []),
+      ...prev.slice(0, 7),
     ]);
   };
 
@@ -106,11 +120,14 @@ function MempoolSimulator() {
 
   const pending = txs.filter((t) => !t.inBlock).sort((a, b) => b.feeRate - a.feeRate);
   const confirmed = txs.filter((t) => t.inBlock);
+  const { selected: wouldBeSelected, usedVb } = getBlockSelection(pending);
 
   const feeRates = pending.map((t) => t.feeRate);
   const labels = pending.map((t) => t.id);
   const colors = pending.map((t) =>
-    t.feeRate >= 100 ? "#ef4444" : t.feeRate >= 40 ? "#f97316" : t.feeRate >= 15 ? "#eab308" : "#6b7280"
+    wouldBeSelected.includes(t.id)
+      ? (t.feeRate >= 100 ? "#22c55e" : "#4ade80") // 블록 포함 예정: 녹색
+      : (t.feeRate >= 15 ? "#f97316" : "#ef4444")   // 탈락 예정: 주황/빨강
   );
 
   return (
@@ -184,8 +201,10 @@ function MempoolSimulator() {
         </div>
       )}
 
-      <div className="text-xs text-muted-foreground">
-        빨강 ≥100 / 주황 ≥40 / 노랑 ≥15 / 회색 &lt;15 sat/vB — 채굴자는 수수료가 높은 순서로 tx를 블록에 담습니다.
+      <div className="text-xs text-muted-foreground flex flex-wrap gap-3">
+        <span><span className="inline-block w-3 h-3 rounded-sm bg-green-500 mr-1 align-middle"></span>블록 포함 예정</span>
+        <span><span className="inline-block w-3 h-3 rounded-sm bg-orange-500 mr-1 align-middle"></span>탈락 (수수료 부족)</span>
+        <span className="ml-auto">블록 용량: {blockCapacity} vB — 채굴자는 수수료율 높은 순서로 선택</span>
       </div>
     </div>
   );

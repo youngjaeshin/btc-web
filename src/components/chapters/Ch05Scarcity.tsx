@@ -250,7 +250,7 @@ function S2FComparisonSim() {
 // ---------------------------------------------------------------------------
 // Simulation 2: Supply curve
 // ---------------------------------------------------------------------------
-function SupplyCurveSim() {
+function SupplyCurveChart() {
   const MAX_EPOCHS = 33; // effectively all BTC mined by epoch ~32
 
   const years: number[] = [];
@@ -333,7 +333,7 @@ function SupplyCurveSim() {
 
   return (
     <Card className="p-4 my-6">
-      <h3 className="font-bold text-lg mb-2">시뮬레이션 2: 공급 곡선</h3>
+      <h3 className="font-bold text-lg mb-2">공급 곡선</h3>
       <p className="text-sm text-muted-foreground mb-3">
         주황색 수직 점선은 반감기 시점입니다. 보라색 점선은 21M BTC 상한(점근선)입니다.
         공급 곡선은 21M에 점점 가까워지지만 절대 초과하지 않습니다.
@@ -395,7 +395,7 @@ function computeBtcYearlyInflation(): { years: number[]; rates: number[] } {
   return { years, rates };
 }
 
-function InflationComparisonSim() {
+function InflationComparisonChart() {
   const { years: btcYears, rates: btcInflation } = computeBtcYearlyInflation();
 
   // USD CPI inflation (source: U.S. Bureau of Labor Statistics, CPI-U annual average)
@@ -444,9 +444,7 @@ function InflationComparisonSim() {
     },
     yaxis: {
       title: { text: "연간 인플레이션율 (%)" },
-      type: "log" as const,
-      range: [-0.3, 2.1], // log10(0.5) to log10(120)
-      dtick: 1,
+      range: [0, 105],
     },
     plot_bgcolor: "rgba(0,0,0,0)",
     paper_bgcolor: "rgba(0,0,0,0)",
@@ -454,20 +452,20 @@ function InflationComparisonSim() {
     margin: { t: 60, b: 60, l: 60, r: 20 },
     legend: { x: 0.6, y: 0.95 },
     annotations: [
-      { x: 2012, y: Math.log10(30.6), text: "1차 반감기", showarrow: true, arrowhead: 2, ax: 30, ay: -25, font: { size: 10 } },
-      { x: 2016, y: Math.log10(6.9), text: "2차", showarrow: true, arrowhead: 2, ax: 25, ay: -20, font: { size: 10 } },
-      { x: 2020, y: Math.log10(2.5), text: "3차", showarrow: true, arrowhead: 2, ax: 25, ay: -20, font: { size: 10 } },
-      { x: 2024, y: Math.log10(1.1), text: "4차", showarrow: true, arrowhead: 2, ax: 25, ay: -20, font: { size: 10 } },
+      { x: 2012, y: 30.6, text: "1차 반감기", showarrow: true, arrowhead: 2, ax: 30, ay: -25, font: { size: 10 } },
+      { x: 2016, y: 6.9, text: "2차", showarrow: true, arrowhead: 2, ax: 25, ay: -20, font: { size: 10 } },
+      { x: 2020, y: 2.5, text: "3차", showarrow: true, arrowhead: 2, ax: 25, ay: -20, font: { size: 10 } },
+      { x: 2024, y: 1.1, text: "4차", showarrow: true, arrowhead: 2, ax: 25, ay: -20, font: { size: 10 } },
     ],
   };
 
   return (
     <Card className="p-4 my-6">
-      <h3 className="font-bold text-lg mb-2">시뮬레이션 3: 인플레이션율 비교</h3>
+      <h3 className="font-bold text-lg mb-2">인플레이션율 비교</h3>
       <p className="text-sm text-muted-foreground mb-3">
         BTC의 인플레이션율은 반감기마다 계단식으로 절반으로 줄어듭니다.
         USD는 꾸준히 양(+)의 인플레이션을 유지하고, 금은 약 1.5~2%를 유지합니다.
-        (로그 스케일 — 초기 100%에서 현재 0.8%까지의 극적인 감소를 확인하세요)
+        초기 100%에서 현재 0.8%까지의 극적인 감소를 확인하세요.
       </p>
       <Plot
         data={data}
@@ -596,7 +594,7 @@ export default function Ch05Scarcity() {
         나머지 약 5%는 2140년까지 서서히, 기하급수적으로 줄어드는 속도로 발행됩니다.
       </p>
 
-      <SupplyCurveSim />
+      <SupplyCurveChart />
 
       {/* ------------------------------------------------------------------ */}
       {/* Section 3: Stock-to-Flow 모델 */}
@@ -759,7 +757,7 @@ export default function Ch05Scarcity() {
         </Card>
       </div>
 
-      <InflationComparisonSim />
+      <InflationComparisonChart />
 
       <InfoBox type="tip" title="Bitcoiner의 핵심 인사이트">
         비트코인은 단순한 &quot;디지털 금&quot;이 아닙니다. 금은 물리적 제약에 의해 희소하고,
