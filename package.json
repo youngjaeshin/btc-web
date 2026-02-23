@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@noble/hashes": "^2.0.1",
+    "@noble/secp256k1": "^3.0.0",
+    "@scure/base": "^2.0.0",
     "@tailwindcss/typography": "^0.5.19",
     "@types/react-plotly.js": "^2.6.4",
     "class-variance-authority": "^0.7.1",

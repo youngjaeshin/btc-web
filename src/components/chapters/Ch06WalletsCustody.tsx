@@ -7,7 +7,22 @@ import { QuizSection } from "@/components/quiz/QuizSection";
 import { Plot } from "@/components/content/DynamicPlot";
 import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import {
+  Dices,
+  ShieldCheck,
+  BookOpen,
+  Hash,
+  Lock,
+  KeyRound,
+  Globe,
+  Loader2,
+  ChevronDown,
+  AlertTriangle,
+} from "lucide-react";
+import { type DerivationResult, runFullDerivation } from "@/lib/crypto";
 
 // ---------------------------------------------------------------------------
 // Quiz questions
@@ -457,6 +472,281 @@ function HdWalletSim() {
 }
 
 // ---------------------------------------------------------------------------
+// Simulation 4: Wallet derivation pipeline (real crypto)
+// ---------------------------------------------------------------------------
+
+function WalletDerivationSim() {
+  const [bits, setBits] = useState<128 | 256>(128);
+  const [passphrase, setPassphrase] = useState("");
+  const [result, setResult] = useState<DerivationResult | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerate = () => {
+    setLoading(true);
+    setTimeout(() => {
+      const derivation = runFullDerivation(bits, passphrase);
+      setResult(derivation);
+      setLoading(false);
+    }, 50);
+  };
+
+  const wordCount = bits === 128 ? 12 : 24;
+
+  return (
+    <Card className="p-4 my-6">
+      <h3 className="font-bold text-lg mb-2">시뮬레이션 4: 지갑 파생 파이프라인</h3>
+      <p className="text-sm text-muted-foreground mb-3">
+        실제 암호화 라이브러리(@noble/hashes, @noble/secp256k1)로 엔트로피 → 주소까지 7단계를 계산합니다.
+        모든 연산은 브라우저에서 실행됩니다.
+      </p>
+
+      {/* Warning */}
+      <div className="flex items-start gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-3 mb-4">
+        <AlertTriangle className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
+        <p className="text-xs text-muted-foreground">
+          <strong className="text-yellow-600 dark:text-yellow-400">교육용 데모</strong> — 생성된 키와 주소를 실제 지갑으로 사용하지 마세요.
+        </p>
+      </div>
+
+      {/* Controls */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="space-y-1 flex-1">
+          <label className="text-xs font-medium">엔트로피 크기</label>
+          <div className="flex rounded-lg border overflow-hidden">
+            <button
+              onClick={() => setBits(128)}
+              className={`flex-1 py-1.5 px-3 text-xs font-medium transition-colors ${
+                bits === 128 ? "bg-primary text-primary-foreground" : "hover:bg-accent"
+              }`}
+            >
+              128비트 (12단어)
+            </button>
+            <button
+              onClick={() => setBits(256)}
+              className={`flex-1 py-1.5 px-3 text-xs font-medium transition-colors ${
+                bits === 256 ? "bg-primary text-primary-foreground" : "hover:bg-accent"
+              }`}
+            >
+              256비트 (24단어)
+            </button>
+          </div>
+        </div>
+        <div className="space-y-1 flex-1">
+          <label className="text-xs font-medium">
+            패스프레이즈 <span className="text-muted-foreground font-normal">(선택)</span>
+          </label>
+          <input
+            type="text"
+            value={passphrase}
+            onChange={(e) => setPassphrase(e.target.value)}
+            placeholder="추가 보안 문구..."
+            className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </div>
+      </div>
+
+      <Button
+        onClick={handleGenerate}
+        disabled={loading}
+        className="w-full mb-4 gap-2"
+      >
+        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Dices className="h-4 w-4" />}
+        {loading ? "계산 중..." : "🎲 새로 생성"}
+      </Button>
+
+      {/* 7-step pipeline */}
+      <div className="space-y-2">
+        <StepBlock
+          step={1} title="엔트로피 생성" icon={<Dices className="h-3.5 w-3.5" />}
+          desc="CSPRNG으로 무작위 바이트를 생성합니다." active={!!result}
+        >
+          {result && (
+            <>
+              <HexRow label="Hex" value={result.entropyHex} />
+              <div className="font-mono text-[10px] leading-relaxed break-all bg-muted/50 rounded p-1.5 mt-1">
+                {result.entropyBinary}
+              </div>
+            </>
+          )}
+        </StepBlock>
+
+        <StepDivider />
+
+        <StepBlock
+          step={2} title="체크섬 (SHA-256)" icon={<ShieldCheck className="h-3.5 w-3.5" />}
+          desc={`SHA-256 해시에서 앞 ${bits === 128 ? 4 : 8}비트를 체크섬으로 추출합니다.`} active={!!result}
+        >
+          {result && (
+            <>
+              <HexRow label="SHA-256" value={result.checksum.hash} />
+              <div className="font-mono text-xs bg-muted/50 rounded p-1.5 mt-1">
+                <span className="text-green-600 dark:text-green-400 font-bold">{result.checksum.checksumBits}</span>
+                <span className="text-muted-foreground/40">{result.checksum.hashBinary.slice(result.checksum.checksumLength, result.checksum.checksumLength + 20)}...</span>
+              </div>
+            </>
+          )}
+        </StepBlock>
+
+        <StepDivider />
+
+        <StepBlock
+          step={3} title="니모닉 단어 (BIP-39)" icon={<BookOpen className="h-3.5 w-3.5" />}
+          desc={`${bits + (bits === 128 ? 4 : 8)}비트를 11비트씩 나누어 ${wordCount}개 단어를 선택합니다.`} active={!!result}
+        >
+          {result && (
+            <>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                {result.mnemonicResult.groups.map((g, i) => (
+                  <div key={i} className="flex items-center gap-1 rounded border bg-muted/30 px-1.5 py-1">
+                    <span className="text-[10px] text-muted-foreground min-w-[1.2rem]">{i + 1}.</span>
+                    <span className="text-xs font-mono font-medium truncate">{g.word}</span>
+                  </div>
+                ))}
+              </div>
+              <details className="text-[10px] mt-1">
+                <summary className="text-muted-foreground cursor-pointer hover:text-foreground">비트 분할 상세</summary>
+                <div className="mt-1 space-y-0.5 bg-muted/50 rounded p-1.5 max-h-36 overflow-y-auto">
+                  {result.mnemonicResult.groups.map((g, i) => (
+                    <div key={i} className="font-mono flex gap-1.5">
+                      <span className="text-muted-foreground w-5">{i + 1}.</span>
+                      <span className="text-blue-600 dark:text-blue-400">{g.bits}</span>
+                      <span className="text-muted-foreground">&rarr;</span>
+                      <span>{g.index}</span>
+                      <span className="text-muted-foreground">&rarr;</span>
+                      <span className="font-semibold">{g.word}</span>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            </>
+          )}
+        </StepBlock>
+
+        <StepDivider />
+
+        <StepBlock
+          step={4} title="시드 (PBKDF2)" icon={<Hash className="h-3.5 w-3.5" />}
+          desc={`PBKDF2-HMAC-SHA512로 2048회 반복 해싱하여 512비트 시드를 생성합니다.${passphrase ? ` 패스프레이즈: "${passphrase}"` : ""}`}
+          active={!!result}
+        >
+          {result && (
+            <>
+              <HexRow label="Seed (512비트)" value={result.seedHex} />
+              <div className="flex gap-1.5 flex-wrap mt-1">
+                <Badge variant="outline" className="text-[10px]">PBKDF2</Badge>
+                <Badge variant="outline" className="text-[10px]">HMAC-SHA512</Badge>
+                <Badge variant="outline" className="text-[10px]">2048 iterations</Badge>
+              </div>
+            </>
+          )}
+        </StepBlock>
+
+        <StepDivider />
+
+        <StepBlock
+          step={5} title="마스터 키 (BIP-32)" icon={<Lock className="h-3.5 w-3.5" />}
+          desc='HMAC-SHA512("Bitcoin seed")로 마스터 개인키와 체인코드를 분리합니다.'
+          active={!!result}
+        >
+          {result && (
+            <>
+              <SensitiveHexRow label="마스터 개인키 (256비트)" value={result.masterKey.privateKeyHex} />
+              <HexRow label="체인코드 (256비트)" value={result.masterKey.chainCodeHex} />
+            </>
+          )}
+        </StepBlock>
+
+        <StepDivider />
+
+        <StepBlock
+          step={6} title="공개키 (secp256k1)" icon={<KeyRound className="h-3.5 w-3.5" />}
+          desc="개인키를 secp256k1 생성점(G)에 곱하여 압축 공개키(33바이트)를 생성합니다."
+          active={!!result}
+        >
+          {result && (
+            <>
+              <HexRow label="압축 공개키 (33바이트)" value={result.publicKeyResult.publicKeyHex} />
+              <div className="text-[10px] text-muted-foreground mt-0.5">
+                접두사 <code className="bg-muted px-0.5 rounded">{result.publicKeyResult.publicKeyHex.slice(0, 2)}</code>
+                {" = "}{result.publicKeyResult.publicKeyHex.startsWith("02") ? "y 좌표 짝수" : "y 좌표 홀수"}
+              </div>
+            </>
+          )}
+        </StepBlock>
+
+        <StepDivider />
+
+        <StepBlock
+          step={7} title="비트코인 주소 (Bech32)" icon={<Globe className="h-3.5 w-3.5" />}
+          desc="HASH160(RIPEMD160 ∘ SHA256) 후 Bech32 인코딩하여 SegWit 주소를 생성합니다."
+          active={!!result}
+        >
+          {result && (
+            <>
+              <HexRow label="HASH160" value={result.addressResult.hash160Hex} />
+              <Separator className="my-1.5" />
+              <div className="text-[10px] text-muted-foreground mb-0.5">비트코인 주소 (SegWit v0)</div>
+              <div className="font-mono text-sm font-bold text-orange-500 break-all bg-orange-500/5 border border-orange-500/20 rounded-lg p-2">
+                {result.addressResult.address}
+              </div>
+            </>
+          )}
+        </StepBlock>
+      </div>
+    </Card>
+  );
+}
+
+// --- Step sub-components for WalletDerivationSim ---
+
+function StepBlock({ step, title, icon, desc, active, children }: {
+  step: number; title: string; icon: React.ReactNode; desc: string; active: boolean; children?: React.ReactNode;
+}) {
+  return (
+    <div className={`rounded-lg border p-3 transition-all ${active ? "opacity-100" : "opacity-40"}`}>
+      <div className="flex items-center gap-1.5 mb-1">
+        <Badge variant={active ? "default" : "outline"} className="text-[10px] px-1.5 py-0">Step {step}</Badge>
+        <span className="text-muted-foreground">{icon}</span>
+        <span className="font-semibold text-xs">{title}</span>
+      </div>
+      <p className="text-[11px] text-muted-foreground leading-relaxed mb-1.5">💡 {desc}</p>
+      {active && children}
+      {!active && <div className="text-center text-[10px] text-muted-foreground">🔒 생성 버튼을 눌러주세요</div>}
+    </div>
+  );
+}
+
+function StepDivider() {
+  return <div className="flex justify-center text-muted-foreground/40"><ChevronDown className="h-4 w-4" /></div>;
+}
+
+function HexRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="mt-1">
+      <span className="text-[10px] text-muted-foreground">{label}</span>
+      <div className="font-mono text-[10px] break-all bg-muted/50 rounded p-1.5">{value}</div>
+    </div>
+  );
+}
+
+function SensitiveHexRow({ label, value }: { label: string; value: string }) {
+  const [revealed, setRevealed] = useState(false);
+  return (
+    <div className="mt-1">
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] text-muted-foreground">{label}</span>
+        <button onClick={() => setRevealed((v) => !v)} className="text-[10px] text-primary hover:underline">
+          {revealed ? "숨기기" : "보기"}
+        </button>
+      </div>
+      <div className="font-mono text-[10px] break-all bg-muted/50 rounded p-1.5">
+        {revealed ? value : "•".repeat(Math.min(value.length, 64))}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 export default function Ch06WalletsCustody() {
@@ -744,6 +1034,18 @@ export default function Ch06WalletsCustody() {
           </div>
         </div>
       </InfoBox>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Section 6: 지갑 파생 실습 */}
+      {/* ------------------------------------------------------------------ */}
+      <h2>6. 지갑 파생 실습 — 엔트로피에서 주소까지</h2>
+
+      <p>
+        지금까지 배운 개인키, 공개키, 시드 문구, HD 지갑의 개념을 하나의 파이프라인으로 직접 체험합니다.
+        실제 암호화 라이브러리를 사용하여 진짜 값을 계산하며, 각 단계의 중간값을 확인할 수 있습니다.
+      </p>
+
+      <WalletDerivationSim />
 
       {/* ------------------------------------------------------------------ */}
       {/* Quiz */}
