@@ -4,7 +4,6 @@ import { useState } from "react";
 import { InfoBox } from "@/components/content/InfoBox";
 import { KatexBlock } from "@/components/content/KatexBlock";
 import { QuizSection } from "@/components/quiz/QuizSection";
-import { Plot } from "@/components/content/DynamicPlot";
 import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -127,92 +126,51 @@ const quizQuestions = [
 ];
 
 // ---------------------------------------------------------------------------
-// Simulation 1: Entropy and security strength calculator
+// Simulation 1: Entropy security strength (static comparison)
 // ---------------------------------------------------------------------------
-function EntropyCalculatorSim() {
-  const [entropyBits, setEntropyBits] = useState(128);
-
-  // Combinations: 2^entropyBits (display as scientific notation string)
-  const combinations = Math.pow(2, entropyBits);
-
-  // Time to brute force at 1 trillion guesses/second
-  const secondsToBrute = combinations / 1e12;
-  const universeAge = 4.3e17; // seconds (~13.8 billion years)
-  const universeMultiple = secondsToBrute / universeAge;
-
-  function formatSci(n: number): string {
-    if (!isFinite(n) || n > 1e300) return "∞ (사실상 무한대)";
-    const exp = Math.floor(Math.log10(n));
-    const mantissa = n / Math.pow(10, exp);
-    return `${mantissa.toFixed(2)} × 10^${exp}`;
-  }
-
-  const snapPoints = [64, 96, 128, 160, 192, 256];
-  const nearestSnap = snapPoints.reduce((a, b) =>
-    Math.abs(b - entropyBits) < Math.abs(a - entropyBits) ? b : a
-  );
-
+function EntropyStrengthCard() {
   return (
     <Card className="p-4 my-6">
-      <h3 className="font-bold text-lg mb-2">시뮬레이션 1: 엔트로피와 보안 강도 계산기</h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        슬라이더로 엔트로피 비트 수를 조정해 보안 강도가 어떻게 달라지는지 확인하세요.
-      </p>
-      <div className="mb-4">
-        <label className="text-sm font-medium">
-          엔트로피: <span className="text-primary font-bold">{entropyBits}비트</span>
-          {entropyBits === 128 && " (12단어 시드)"}
-          {entropyBits === 256 && " (24단어 시드)"}
-        </label>
-        <Slider
-          min={64}
-          max={256}
-          step={1}
-          value={[entropyBits]}
-          onValueChange={(v) => setEntropyBits(v[0])}
-          className="mt-2"
-        />
-        <div className="flex justify-between text-xs text-muted-foreground mt-1">
-          <span>64비트</span>
-          <span>128비트 (12단어)</span>
-          <span>256비트 (24단어)</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
-          <div className="text-xs text-muted-foreground mb-1">가능한 시드 조합 수</div>
-          <div className="font-mono text-sm font-bold text-emerald-700 dark:text-emerald-300 break-all">
-            2^{entropyBits} = {formatSci(combinations)}
+      <h3 className="font-bold text-lg mb-2">12단어 vs 24단어 보안 강도</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="rounded-lg border-2 border-blue-300 dark:border-blue-700 p-4 bg-blue-50/50 dark:bg-blue-950/20">
+          <div className="text-sm font-bold text-blue-700 dark:text-blue-300 mb-3">12단어 (128비트)</div>
+          <div className="space-y-2 text-sm">
+            <div>
+              <span className="text-xs text-muted-foreground">가능한 조합 수</span>
+              <div className="font-mono font-bold">2¹²⁸ ≈ 3.4 × 10³⁸</div>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">무차별 대입 시간 (초당 1조 회)</span>
+              <div className="font-mono font-bold">약 1.08 × 10¹⁹ 년</div>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">우주 나이 대비</span>
+              <div className="font-bold text-blue-600 dark:text-blue-400">약 7.8억 배 — 해킹 불가능</div>
+            </div>
           </div>
         </div>
-        <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-          <div className="text-xs text-muted-foreground mb-1">무차별 대입 소요 시간</div>
-          <div className="font-mono text-sm font-bold text-blue-700 dark:text-blue-300 break-all">
-            {formatSci(secondsToBrute)} 초
-          </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            (초당 1조 회 시도 기준)
-          </div>
-        </div>
-        <div className="p-3 bg-violet-50 dark:bg-violet-950/30 rounded-lg md:col-span-2">
-          <div className="text-xs text-muted-foreground mb-1">우주 나이 대비</div>
-          <div className="font-bold text-violet-700 dark:text-violet-300">
-            {universeMultiple > 1e20
-              ? `우주 나이의 ${formatSci(universeMultiple)} 배 — 사실상 해킹 불가능`
-              : universeMultiple > 1e6
-              ? `우주 나이의 ${formatSci(universeMultiple)} 배`
-              : universeMultiple > 1
-              ? `우주 나이의 ${universeMultiple.toExponential(2)} 배`
-              : `우주 나이의 ${(universeMultiple * 100).toFixed(4)}% — 취약할 수 있음!`}
+        <div className="rounded-lg border-2 border-violet-300 dark:border-violet-700 p-4 bg-violet-50/50 dark:bg-violet-950/20">
+          <div className="text-sm font-bold text-violet-700 dark:text-violet-300 mb-3">24단어 (256비트)</div>
+          <div className="space-y-2 text-sm">
+            <div>
+              <span className="text-xs text-muted-foreground">가능한 조합 수</span>
+              <div className="font-mono font-bold">2²⁵⁶ ≈ 1.16 × 10⁷⁷</div>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">무차별 대입 시간 (초당 1조 회)</span>
+              <div className="font-mono font-bold">약 3.67 × 10⁵⁷ 년</div>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">우주 나이 대비</span>
+              <div className="font-bold text-violet-600 dark:text-violet-400">약 2.66 × 10⁴⁷ 배 — 사실상 무한</div>
+            </div>
           </div>
         </div>
       </div>
-
       <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg text-sm">
-        <strong>결론:</strong> 128비트(12단어) 엔트로피조차 현존하는 모든 컴퓨터를 합쳐도
-        우주 수명 안에 해킹할 수 없습니다. 가장 가까운 표준 엔트로피: <strong>{nearestSnap}비트</strong>
-        {nearestSnap === 128 ? " (12단어 BIP-39)" : nearestSnap === 256 ? " (24단어 BIP-39)" : ""}.
+        <strong>결론:</strong> 12단어(128비트)만으로도 현존하는 모든 컴퓨터를 합쳐도
+        우주 수명 안에 해킹할 수 없습니다. 24단어는 양자 컴퓨터 시대를 대비한 추가 안전 마진입니다.
       </div>
     </Card>
   );
@@ -354,125 +312,7 @@ function UtxoVisualizerSim() {
 }
 
 // ---------------------------------------------------------------------------
-// Simulation 3: HD wallet key derivation tree
-// ---------------------------------------------------------------------------
-function HdWalletSim() {
-  const [account, setAccount] = useState(0);
-  const [addressIndex, setAddressIndex] = useState(0);
-  const [isChange, setIsChange] = useState(false);
-
-  const purpose = 44;
-  const coinType = 0; // Bitcoin mainnet
-  const change = isChange ? 1 : 0;
-
-  const derivationPath = `m/${purpose}'/${coinType}'/${account}'/${change}/${addressIndex}`;
-
-  // Simulate deterministic "key" display (not real crypto, just demonstration)
-  function deterministicHex(seed: string): string {
-    let hash = 0;
-    for (let i = 0; i < seed.length; i++) {
-      hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
-    }
-    const abs = Math.abs(hash);
-    const hex = abs.toString(16).padStart(8, "0");
-    return hex.repeat(4).substring(0, 32) + "..." ;
-  }
-
-  const masterSeed = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-  const childKey = deterministicHex(derivationPath + masterSeed);
-
-  // Visualize tree nodes
-  const nodes = [
-    { level: 0, label: "마스터 키 (m)", path: "m", color: "bg-violet-100 dark:bg-violet-900/40 border-violet-400" },
-    { level: 1, label: `목적 (${purpose}')`, path: `m/${purpose}'`, color: "bg-blue-100 dark:bg-blue-900/40 border-blue-400" },
-    { level: 2, label: `코인 타입 (${coinType}' = BTC)`, path: `m/${purpose}'/${coinType}'`, color: "bg-cyan-100 dark:bg-cyan-900/40 border-cyan-400" },
-    { level: 3, label: `계정 (${account}')`, path: `m/${purpose}'/${coinType}'/${account}'`, color: "bg-emerald-100 dark:bg-emerald-900/40 border-emerald-400" },
-    { level: 4, label: `${isChange ? "잔돈 주소" : "외부 주소"} (${change})`, path: `m/${purpose}'/${coinType}'/${account}'/${change}`, color: "bg-amber-100 dark:bg-amber-900/40 border-amber-400" },
-    { level: 5, label: `주소 인덱스 (${addressIndex})`, path: derivationPath, color: "bg-orange-100 dark:bg-orange-900/40 border-orange-400" },
-  ];
-
-  return (
-    <Card className="p-4 my-6">
-      <h3 className="font-bold text-lg mb-2">시뮬레이션 3: HD 지갑 키 파생 데모</h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        하나의 마스터 키(시드)에서 무한한 자식 키를 생성할 수 있습니다.
-        파라미터를 변경하면 파생 경로와 키가 어떻게 달라지는지 확인하세요.
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-        <div>
-          <label className="text-sm font-medium block mb-1">
-            계정 번호: <span className="text-primary font-bold">{account}</span>
-          </label>
-          <Slider
-            min={0}
-            max={5}
-            step={1}
-            value={[account]}
-            onValueChange={(v) => setAccount(v[0])}
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium block mb-1">
-            주소 인덱스: <span className="text-primary font-bold">{addressIndex}</span>
-          </label>
-          <Slider
-            min={0}
-            max={19}
-            step={1}
-            value={[addressIndex]}
-            onValueChange={(v) => setAddressIndex(v[0])}
-          />
-        </div>
-        <div className="flex items-end pb-1">
-          <Button
-            variant={isChange ? "default" : "outline"}
-            size="sm"
-            onClick={() => setIsChange((v) => !v)}
-            className="w-full"
-          >
-            {isChange ? "잔돈 주소 (change=1)" : "외부 주소 (change=0)"}
-          </Button>
-        </div>
-      </div>
-
-      {/* Tree visualization */}
-      <div className="mb-4 space-y-1">
-        {nodes.map((node, i) => (
-          <div
-            key={node.path}
-            className="flex items-center"
-            style={{ paddingLeft: `${node.level * 20}px` }}
-          >
-            {node.level > 0 && (
-              <span className="text-muted-foreground mr-2 text-xs">└─</span>
-            )}
-            <div className={`rounded border px-2 py-1 text-xs font-medium ${node.color} ${i === nodes.length - 1 ? "ring-2 ring-orange-400" : ""}`}>
-              {node.label}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Derivation result */}
-      <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border">
-        <div className="text-xs text-muted-foreground mb-1">파생 경로</div>
-        <div className="font-mono text-sm font-bold text-primary">{derivationPath}</div>
-        <div className="text-xs text-muted-foreground mt-2 mb-1">파생된 자식 키 (시뮬레이션)</div>
-        <div className="font-mono text-xs text-muted-foreground break-all">{childKey}</div>
-      </div>
-
-      <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg text-sm">
-        <strong>핵심:</strong> 하나의 12단어 시드만 백업하면 이 트리에서 파생되는
-        <strong> 수십억 개의 주소</strong>를 모두 복구할 수 있습니다.
-        각 계정과 주소는 독립적으로 동작하며 프라이버시를 향상시킵니다.
-      </div>
-    </Card>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Simulation 4: Wallet derivation pipeline (real crypto)
+// Simulation 3: Wallet derivation pipeline (real crypto)
 // ---------------------------------------------------------------------------
 
 function WalletDerivationSim() {
@@ -494,7 +334,7 @@ function WalletDerivationSim() {
 
   return (
     <Card className="p-4 my-6">
-      <h3 className="font-bold text-lg mb-2">시뮬레이션 4: 지갑 파생 파이프라인</h3>
+      <h3 className="font-bold text-lg mb-2">시뮬레이션 3: 지갑 파생 파이프라인</h3>
       <p className="text-sm text-muted-foreground mb-3">
         실제 암호화 라이브러리(@noble/hashes, @noble/secp256k1)로 엔트로피 → 주소까지 7단계를 계산합니다.
         모든 연산은 브라우저에서 실행됩니다.
@@ -883,7 +723,7 @@ export default function Ch06WalletsCustody() {
         마지막 4비트는 체크섬으로 오타를 감지합니다.
       </p>
 
-      <EntropyCalculatorSim />
+      <EntropyStrengthCard />
 
       <InfoBox type="tip" title="시드 문구 보안 원칙">
         <ul className="list-none space-y-1 text-sm">
@@ -942,8 +782,6 @@ export default function Ch06WalletsCustody() {
           </tbody>
         </table>
       </div>
-
-      <HdWalletSim />
 
       <InfoBox type="info" title="강화 파생(Hardened Derivation)">
         경로에 어포스트로피(&apos;)가 붙은 레벨은 &quot;강화 파생&quot;으로, 부모 공개키와 자식 키 사이의
