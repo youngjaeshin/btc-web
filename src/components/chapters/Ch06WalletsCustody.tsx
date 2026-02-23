@@ -177,7 +177,7 @@ function EntropyStrengthCard() {
 }
 
 // ---------------------------------------------------------------------------
-// Simulation 2: UTXO visualizer
+// Simulation 1: UTXO visualizer
 // ---------------------------------------------------------------------------
 
 interface Utxo {
@@ -214,7 +214,7 @@ function UtxoVisualizerSim() {
 
   return (
     <Card className="p-4 my-6">
-      <h3 className="font-bold text-lg mb-2">시뮬레이션 2: UTXO 시각화</h3>
+      <h3 className="font-bold text-lg mb-2">시뮬레이션 1: UTXO 시각화</h3>
       <p className="text-sm text-muted-foreground mb-4">
         지갑 잔액은 여러 UTXO(미사용 거래 출력)로 구성됩니다.
         전송 금액을 조정하면 어떤 UTXO가 선택되고 잔돈이 어떻게 생기는지 확인하세요.
@@ -312,7 +312,7 @@ function UtxoVisualizerSim() {
 }
 
 // ---------------------------------------------------------------------------
-// Simulation 3: Wallet derivation pipeline (real crypto)
+// Simulation 2: Wallet derivation pipeline (real crypto)
 // ---------------------------------------------------------------------------
 
 function WalletDerivationSim() {
@@ -334,7 +334,7 @@ function WalletDerivationSim() {
 
   return (
     <Card className="p-4 my-6">
-      <h3 className="font-bold text-lg mb-2">시뮬레이션 3: 지갑 파생 파이프라인</h3>
+      <h3 className="font-bold text-lg mb-2">시뮬레이션 2: 지갑 파생 파이프라인</h3>
       <p className="text-sm text-muted-foreground mb-3">
         실제 암호화 라이브러리(@noble/hashes, @noble/secp256k1)로 엔트로피 → 주소까지 7단계를 계산합니다.
         모든 연산은 브라우저에서 실행됩니다.
