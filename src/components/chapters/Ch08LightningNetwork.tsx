@@ -246,9 +246,7 @@ function HtlcVisualizer() {
   const [stepIdx, setStepIdx] = useState(0);
   const current = HTLC_STEPS[stepIdx];
 
-  const aliceBalAfter = stepIdx >= 6 ? -50100 : 0;
   const bobFee = stepIdx >= 6 ? 100 : 0;
-  const carolBalAfter = stepIdx >= 4 ? 50000 : 0;
 
   const nodeStatus = (node: "alice" | "bob" | "carol") => {
     if (node === "carol") {
@@ -475,7 +473,7 @@ function FeeComparison() {
           legend: { x: 0.7, y: 0.9 },
           paper_bgcolor: "transparent",
           plot_bgcolor: "transparent",
-          font: { size: 11 },
+          font: { size: 11, color: "#666" },
         }}
         config={{ displayModeBar: false, responsive: true }}
         style={{ width: "100%" }}
@@ -593,7 +591,7 @@ const quizQuestions = [
 
 export default function Ch08LightningNetwork() {
   return (
-    <div>
+    <article className="prose prose-neutral dark:prose-invert max-w-none">
       {/* Section 1: Why Layer 2 */}
       <h2>1. 왜 레이어2가 필요한가: 블록 공간의 귀중함</h2>
 
@@ -749,6 +747,6 @@ export default function Ch08LightningNetwork() {
       </p>
 
       <QuizSection questions={quizQuestions} />
-    </div>
+    </article>
   );
 }

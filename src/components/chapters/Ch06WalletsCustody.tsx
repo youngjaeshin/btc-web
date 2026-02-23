@@ -380,6 +380,8 @@ function WalletDerivationSim() {
             value={passphrase}
             onChange={(e) => setPassphrase(e.target.value)}
             placeholder="추가 보안 문구..."
+            autoComplete="off"
+            spellCheck={false}
             className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>
@@ -834,7 +836,9 @@ export default function Ch06WalletsCustody() {
         </Card>
       </div>
 
-      <UtxoVisualizerSim />
+      <div className="not-prose">
+        <UtxoVisualizerSim />
+      </div>
 
       <h3>UTXO와 프라이버시</h3>
       <p>
@@ -883,7 +887,9 @@ export default function Ch06WalletsCustody() {
         실제 암호화 라이브러리를 사용하여 진짜 값을 계산하며, 각 단계의 중간값을 확인할 수 있습니다.
       </p>
 
-      <WalletDerivationSim />
+      <div className="not-prose">
+        <WalletDerivationSim />
+      </div>
 
       {/* ------------------------------------------------------------------ */}
       {/* Quiz */}

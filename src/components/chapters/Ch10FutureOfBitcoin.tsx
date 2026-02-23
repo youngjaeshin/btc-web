@@ -164,7 +164,7 @@ function SecurityBudgetSimulator() {
 
   const initialSubsidy = 50; // BTC per block in block 0
   const blocksPerYear = 52560;
-  const startPrice = 60000; // USD per BTC
+  const startPrice = 94000; // USD per BTC (2024 halving era)
 
   const halvingData: { halving: number; subsidyBTC: number; subsidyUSD: number; feesUSD: number; totalUSD: number }[] = [];
 
@@ -238,6 +238,7 @@ function SecurityBudgetSimulator() {
           legend: { orientation: "h", y: -0.2 },
           paper_bgcolor: "transparent",
           plot_bgcolor: "transparent",
+          font: { color: "#666" },
         }}
         config={{ displayModeBar: false, responsive: true }}
         style={{ width: "100%" }}
@@ -271,7 +272,7 @@ const fudItems = [
     fud: "비트코인은 마약 거래, 랜섬웨어, 자금세탁 등 범죄에 주로 사용됩니다.",
     rebuttal: [
       "비트코인 블록체인은 완전히 투명하고 영구적으로 기록됩니다. 현금보다 훨씬 추적하기 쉽습니다.",
-      "Chainalysis 보고서에 따르면 비트코인 거래 중 불법 거래 비중은 0.1~0.2% 수준입니다.",
+      "Chainalysis 보고서에 따르면 비트코인 거래 중 불법 거래 비중은 약 0.34%(Chainalysis 2023 보고서 기준) 수준입니다.",
       "달러는 전 세계 마약 거래, 자금세탁의 압도적 주요 매체입니다. 달러를 금지해야 할까요?",
       "범죄자들이 왜 투명한 공개 블록체인을 쓸까요? 실제 범죄자들은 현금, 부동산, 은행 계좌를 더 선호합니다.",
       "추적 가능한 비트코인으로 실제로 많은 랜섬웨어 범죄자가 검거되었습니다(예: Colonial Pipeline 해커).",
@@ -324,7 +325,7 @@ function FudRebuttalSection() {
         각 카드를 클릭하면 비트코이너의 관점에서 작성된 반론이 펼쳐집니다.
       </p>
       <div className="space-y-3 not-prose">
-        {fudItems.map((item) => {
+        {fudItems.map((item, index) => {
           const isOpen = openId === item.id;
           return (
             <div
@@ -335,6 +336,7 @@ function FudRebuttalSection() {
                 className="w-full text-left px-5 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
                 onClick={() => setOpenId(isOpen ? null : item.id)}
                 aria-expanded={isOpen}
+                aria-controls={`fud-panel-${index}`}
               >
                 <div>
                   <div className="font-semibold">{item.title}</div>
@@ -345,7 +347,7 @@ function FudRebuttalSection() {
                 </span>
               </button>
               {isOpen && (
-                <div className="border-t border-slate-200 dark:border-slate-700 px-5 py-4 bg-emerald-50 dark:bg-emerald-950/20">
+                <div id={`fud-panel-${index}`} className="border-t border-slate-200 dark:border-slate-700 px-5 py-4 bg-emerald-50 dark:bg-emerald-950/20">
                   <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 mb-2">
                     비트코이너의 반론:
                   </p>
@@ -526,6 +528,7 @@ function DCASimulator() {
           legend: { orientation: "h", y: -0.2 },
           paper_bgcolor: "transparent",
           plot_bgcolor: "transparent",
+          font: { color: "#666" },
         }}
         config={{ displayModeBar: false, responsive: true }}
         style={{ width: "100%" }}
@@ -667,7 +670,7 @@ const quizQuestions = [
 // ─────────────────────────────────────────────
 export default function Ch10FutureOfBitcoin() {
   return (
-    <div>
+    <article className="prose prose-neutral dark:prose-invert max-w-none">
       <BitcoinStandardSection />
       <HyperbitcoinizationSection />
       <SecurityModelSection />
@@ -676,6 +679,6 @@ export default function Ch10FutureOfBitcoin() {
       <PersonalJourneySection />
       <DCASimulator />
       <QuizSection questions={quizQuestions} />
-    </div>
+    </article>
   );
 }

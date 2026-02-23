@@ -101,7 +101,7 @@ function M2AssetChart() {
           margin: { t: 50, b: 50, l: 80, r: 30 },
           paper_bgcolor: "rgba(0,0,0,0)",
           plot_bgcolor: "rgba(0,0,0,0)",
-          font: { color: "#888" },
+          font: { color: "#666" },
           legend: { orientation: "h", y: -0.2 },
           shapes: [
             {
@@ -261,7 +261,7 @@ function InflationCalculator() {
           margin: { t: 50, b: 50, l: 80, r: 30 },
           paper_bgcolor: "rgba(0,0,0,0)",
           plot_bgcolor: "rgba(0,0,0,0)",
-          font: { color: "#888" },
+          font: { color: "#666" },
           legend: { orientation: "h", y: -0.2 },
         }}
         config={{ displayModeBar: false }}
@@ -442,7 +442,7 @@ export default function Ch02FiatProblem() {
       </p>
       <p>
         지급준비율이 10%라면 본원통화 1조 원은 최대 10조 원의 통화를 창조합니다.
-        지급준비율이 0%에 가까워질수록 이론상 무한대의 통화 창조가 가능합니다.
+        지급준비율이 0%에 가까워질수록 이론상 무한대의 통화 창조가 가능하지만, 실제로는 대출 수요, 신용 위험 평가, 자기자본 규제(BIS 바젤 기준) 등이 제약 역할을 합니다.
       </p>
 
       <InfoBox type="info" title="양적완화(QE)의 규모">

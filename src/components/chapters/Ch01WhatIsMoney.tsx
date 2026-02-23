@@ -60,10 +60,13 @@ function MoneyRadarChart() {
           margin: { t: 50, b: 30, l: 40, r: 40 },
           paper_bgcolor: "rgba(0,0,0,0)",
           plot_bgcolor: "rgba(0,0,0,0)",
-          font: { color: "#888" },
+          font: { color: "#666" },
         }}
         config={{ displayModeBar: false }}
       />
+      <p className="text-xs text-muted-foreground mt-2 text-center">
+        ※ 점수는 각 속성의 상대적 비교를 위한 참고 수치이며, 관점에 따라 달라질 수 있습니다.
+      </p>
     </div>
   );
 }
@@ -159,7 +162,7 @@ function InflationSimulator() {
           margin: { t: 50, b: 50, l: 70, r: 30 },
           paper_bgcolor: "rgba(0,0,0,0)",
           plot_bgcolor: "rgba(0,0,0,0)",
-          font: { color: "#888" },
+          font: { color: "#666" },
           legend: { orientation: "h", y: -0.15 },
         }}
         config={{ displayModeBar: false }}
@@ -175,7 +178,7 @@ function BarterSimulation() {
   const [numPeople, setNumPeople] = useState(10);
 
   const nRange = Array.from({ length: 49 }, (_, i) => i + 2);
-  const singleProb = numPeople > 1 ? (1 / Math.pow(numPeople - 1, 2)) * 100 : 100;
+  const singleProb = numPeople > 1 ? (1 / Math.pow(numPeople, 2)) * 100 : 100;
 
   return (
     <div className="my-8">
@@ -200,17 +203,17 @@ function BarterSimulation() {
         <p className="text-xs text-muted-foreground mb-1">특정 두 사람이 서로 원할 확률</p>
         <p className="text-2xl font-bold text-red-500">{singleProb.toFixed(2)}%</p>
         <p className="text-xs text-muted-foreground mt-1">
-          = 1/(N−1)² — 참여자가 늘수록 원하는 상대를 찾기가 급격히 어려워짐
+          = 1/N² — 참여자가 늘수록 원하는 상대를 찾기가 급격히 어려워짐
         </p>
       </Card>
       <Plot
         data={[
           {
             x: nRange,
-            y: nRange.map((n) => (n > 1 ? (1 / Math.pow(n - 1, 2)) * 100 : 100)),
+            y: nRange.map((n) => (1 / Math.pow(n, 2)) * 100),
             type: "scatter",
             mode: "lines",
-            name: "이중 일치 확률 1/(N−1)²",
+            name: "이중 일치 확률 1/N²",
             line: { color: "#f43f5e", width: 2.5 },
             fill: "tozeroy",
             fillcolor: "rgba(244,63,94,0.1)",
@@ -232,7 +235,7 @@ function BarterSimulation() {
           margin: { t: 50, b: 50, l: 60, r: 30 },
           paper_bgcolor: "rgba(0,0,0,0)",
           plot_bgcolor: "rgba(0,0,0,0)",
-          font: { color: "#888" },
+          font: { color: "#666" },
           legend: { orientation: "h", y: -0.2 },
         }}
         config={{ displayModeBar: false }}
@@ -370,9 +373,9 @@ export default function Ch01WhatIsMoney() {
       <p>
         N명이 참여하는 시장에서 특정 두 사람이 서로의 물건을 원하는 확률은 다음과 같습니다.
       </p>
-      <KatexBlock math={"\\frac{1}{(N-1)^2}"} display={true} />
+      <KatexBlock math={"\\frac{1}{N^2}"} display />
       <p>
-        참여자가 10명이면 약 1.2%, 100명이면 0.01%로 급락합니다.
+        참여자가 10명이면 약 1%, 100명이면 0.01%로 급락합니다.
       </p>
       <InfoBox type="definition" title="이중 일치 문제 (Double Coincidence of Wants)">
         교환이 성립하려면 A가 B의 물건을 원하고, 동시에 B도 A의 물건을 원해야 한다는 조건.

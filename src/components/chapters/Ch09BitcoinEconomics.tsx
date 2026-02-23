@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import type { Annotations, Data, Layout } from "plotly.js";
 import { KatexBlock } from "@/components/content/KatexBlock";
 import { InfoBox } from "@/components/content/InfoBox";
 import { QuizSection } from "@/components/quiz/QuizSection";
@@ -329,6 +330,7 @@ function TimePrefSimulator() {
           legend: { orientation: "h", y: -0.2 },
           paper_bgcolor: "transparent",
           plot_bgcolor: "transparent",
+          font: { color: "#666" },
         }}
         config={{ displayModeBar: false, responsive: true }}
         style={{ width: "100%" }}
@@ -398,17 +400,22 @@ function GameTheorySimulator() {
   const [exploited, setExploited] = useState(-5);        // S: get exploited
   const [mutualReject, setMutualReject] = useState(0);  // P: both reject
 
-  // Nash equilibrium detection: dominant strategy
-  // If R >= S (mutualAdopt >= exploited), Adopt,Adopt is Nash Equilibrium (Coordination Game)
-  // Otherwise: Prisoner's Dilemma → (Reject, Reject) or mixed equilibrium
-  const nashAdopt = mutualAdopt >= exploited;
+  // Nash equilibrium detection:
+  // (Adopt, Adopt) is Nash if neither player wants to deviate to Reject:
+  //   Player deviates Adopt→Reject: gets T (defect) instead of R (mutualAdopt)
+  //   So Nash condition: R >= T, i.e. mutualAdopt >= defect
+  // (Reject, Reject) is Nash if neither player wants to deviate to Adopt:
+  //   Player deviates Reject→Adopt: gets S (exploited) instead of P (mutualReject)
+  //   So Nash condition: P >= S, i.e. mutualReject >= exploited
+  const nashAdopt = mutualAdopt >= defect;
+  const nashReject = mutualReject >= exploited;
 
   const matrixData = [
     [mutualAdopt, exploited],   // A:채택 row: (both adopt)=R, (A alone adopts)=S
     [defect, mutualReject],     // A:미채택 row: (B alone adopts)=T, (both reject)=P
   ];
 
-  const annotations: Plotly.Annotations[] = [];
+  const annotations: Partial<Annotations>[] = [];
   const rowLabels = ["국가 A: 채택", "국가 A: 미채택"];
   const colLabels = ["국가 B: 채택", "국가 B: 미채택"];
 
@@ -420,18 +427,19 @@ function GameTheorySimulator() {
         text: `${matrixData[ri][ci]}`,
         showarrow: false,
         font: { size: 20, color: "white" },
-      } as Partial<Plotly.Annotations> as Plotly.Annotations);
+      } as Partial<Annotations>);
     });
   });
 
-  const nashAnnotation = {
-    x: nashAdopt ? 0 : 1,
-    y: nashAdopt ? 0 : 1,
-    text: "★ Nash",
+  // Show Nash marker: prefer Adopt Nash, else Reject Nash, else none
+  const nashAnnotation: Partial<Annotations> = {
+    x: nashAdopt ? 0 : nashReject ? 1 : 0,
+    y: nashAdopt ? 0 : nashReject ? 1 : 0,
+    text: (nashAdopt || nashReject) ? "★ Nash" : "",
     showarrow: false,
     font: { size: 14, color: nashAdopt ? "#fbbf24" : "#ef4444" },
     yshift: -28,
-  } as Partial<Plotly.Annotations> as Plotly.Annotations;
+  };
 
   annotations.push(nashAnnotation);
 
@@ -480,17 +488,18 @@ function GameTheorySimulator() {
             colorscale: "Blues",
             showscale: true,
             colorbar: { title: { text: "보상" } },
-          } as Plotly.Data,
+          } as Data,
         ]}
         layout={{
           title: { text: "비트코인 채택 게임: 보상 행렬" },
           xaxis: { title: { text: "국가 B의 전략" } },
           yaxis: { title: { text: "국가 A의 전략" } },
-          annotations: annotations as Plotly.Layout["annotations"],
+          annotations: annotations as Layout["annotations"],
           height: 320,
           margin: { l: 120, r: 20, t: 50, b: 80 },
           paper_bgcolor: "transparent",
           plot_bgcolor: "transparent",
+          font: { color: "#666" },
         }}
         config={{ displayModeBar: false, responsive: true }}
         style={{ width: "100%" }}
@@ -499,11 +508,15 @@ function GameTheorySimulator() {
       <div className={`mt-3 rounded-lg p-3 text-sm font-medium text-center ${
         nashAdopt
           ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200"
+          : nashReject
+          ? "bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border border-amber-200"
           : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 border border-red-200"
       }`}>
         {nashAdopt
           ? "내쉬 균형: (채택, 채택) — 상호 채택이 지배 전략입니다"
-          : "현재 설정: 죄수의 딜레마 구조 — (미채택, 미채택) 또는 혼합 균형"}
+          : nashReject
+          ? "내쉬 균형: (미채택, 미채택) — 죄수의 딜레마 구조"
+          : "내쉬 균형 없음 — 혼합 전략 균형 또는 순환"}
       </div>
     </div>
   );
@@ -622,6 +635,7 @@ function AdoptionCurveSimulator() {
           legend: { orientation: "h", y: -0.2 },
           paper_bgcolor: "transparent",
           plot_bgcolor: "transparent",
+          font: { color: "#666" },
         }}
         config={{ displayModeBar: false, responsive: true }}
         style={{ width: "100%" }}
@@ -741,7 +755,7 @@ const quizQuestions = [
 // ─────────────────────────────────────────────
 export default function Ch09BitcoinEconomics() {
   return (
-    <div>
+    <article className="prose prose-neutral dark:prose-invert max-w-none">
       <AustrianSection />
       <TimePreferenceSection />
       <TimePrefSimulator />
@@ -751,6 +765,6 @@ export default function Ch09BitcoinEconomics() {
       <AdoptionCurveSection />
       <AdoptionCurveSimulator />
       <QuizSection questions={quizQuestions} />
-    </div>
+    </article>
   );
 }

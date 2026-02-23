@@ -127,16 +127,16 @@ const quizQuestions = [
       "금은 채굴 기술이 발전하거나 새 광맥이 발견되면 공급이 늘어날 수 있습니다. 반면 비트코인의 2,100만 BTC 상한은 프로토콜에 하드코딩되어 있어 누구도 늘릴 수 없습니다.",
   },
   {
-    question: "현재(2026년 기준) 비트코인의 약 발행 비율은?",
+    question: "2024년 4차 반감기 기준 비트코인의 약 발행 비율은?",
     options: [
       "약 50% (약 1,050만 BTC)",
       "약 75% (약 1,575만 BTC)",
       "100% (모두 발행 완료)",
-      "약 95% (약 1,990만 BTC)",
+      "약 94% (약 1,968만 BTC)",
     ],
     answer: 3,
     explanation:
-      "2026년 기준으로 약 19.9백만 BTC가 발행되어 전체 한도의 약 95%가 유통되고 있습니다. 나머지 ~5%는 2140년까지 서서히 발행됩니다.",
+      "2024년 4차 반감기(블록 840,000) 직후 기준으로 약 19.68백만 BTC가 발행되어 전체 한도의 약 94%가 유통 중입니다. 나머지 약 6%는 2140년까지 서서히 발행됩니다.",
   },
   {
     question: "금(Gold)의 현재 Stock-to-Flow 비율은 대략 얼마입니까?",
@@ -396,15 +396,19 @@ function computeBtcYearlyInflation(): { years: number[]; rates: number[] } {
 }
 
 function InflationComparisonChart() {
-  const { years: btcYears, rates: btcInflation } = computeBtcYearlyInflation();
+  const { years: btcAllYears, rates: btcAllRates } = computeBtcYearlyInflation();
+  // 2015년 이후만 표시 (초기 100%대 값 때문에 이후 값이 안 보이는 문제 해결)
+  const startIdx = btcAllYears.indexOf(2015);
+  const btcYears = btcAllYears.slice(startIdx);
+  const btcInflation = btcAllRates.slice(startIdx);
 
   // USD CPI inflation (source: U.S. Bureau of Labor Statistics, CPI-U annual average)
-  const usdYears =      [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
-  const usdInflation =  [ 1.6,  3.2,  2.1,  1.5,  1.6,  0.1,  1.3,  2.1,  2.4,  1.8,  1.2,  4.7,  8.0,  4.1,  2.9,  2.5];
+  const usdYears =      [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+  const usdInflation =  [ 0.1,  1.3,  2.1,  2.4,  1.8,  1.2,  4.7,  8.0,  4.1,  2.9,  2.5];
 
   // Gold supply inflation (source: World Gold Council, annual mine production / above-ground stock)
-  const goldYears =     [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
-  const goldInflation = [ 1.7,  1.7,  1.7,  1.6,  1.6,  1.6,  1.6,  1.5,  1.5,  1.5,  1.5,  1.5,  1.4,  1.4,  1.4,  1.4];
+  const goldYears =     [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+  const goldInflation = [ 1.6,  1.6,  1.5,  1.5,  1.5,  1.5,  1.5,  1.4,  1.4,  1.4,  1.4];
 
   const data = [
     {
@@ -437,14 +441,14 @@ function InflationComparisonChart() {
   ];
 
   const layout = {
-    title: { text: "연간 인플레이션율 비교: BTC vs USD vs 금" },
+    title: { text: "연간 인플레이션율 비교: BTC vs USD vs 금 (2015~)" },
     xaxis: {
       title: { text: "연도" },
-      range: [2010, 2041],
+      range: [2014.5, 2041],
     },
     yaxis: {
       title: { text: "연간 인플레이션율 (%)" },
-      range: [0, 105],
+      range: [0, 12],
     },
     plot_bgcolor: "rgba(0,0,0,0)",
     paper_bgcolor: "rgba(0,0,0,0)",
@@ -452,8 +456,7 @@ function InflationComparisonChart() {
     margin: { t: 60, b: 60, l: 60, r: 20 },
     legend: { x: 0.6, y: 0.95 },
     annotations: [
-      { x: 2012, y: 30.6, text: "1차 반감기", showarrow: true, arrowhead: 2, ax: 30, ay: -25, font: { size: 10 } },
-      { x: 2016, y: 6.9, text: "2차", showarrow: true, arrowhead: 2, ax: 25, ay: -20, font: { size: 10 } },
+      { x: 2016, y: 6.9, text: "2차 반감기", showarrow: true, arrowhead: 2, ax: 30, ay: -25, font: { size: 10 } },
       { x: 2020, y: 2.5, text: "3차", showarrow: true, arrowhead: 2, ax: 25, ay: -20, font: { size: 10 } },
       { x: 2024, y: 1.1, text: "4차", showarrow: true, arrowhead: 2, ax: 25, ay: -20, font: { size: 10 } },
     ],
@@ -461,11 +464,11 @@ function InflationComparisonChart() {
 
   return (
     <Card className="p-4 my-6">
-      <h3 className="font-bold text-lg mb-2">인플레이션율 비교</h3>
+      <h3 className="font-bold text-lg mb-2">인플레이션율 비교 (2015~)</h3>
       <p className="text-sm text-muted-foreground mb-3">
         BTC의 인플레이션율은 반감기마다 계단식으로 절반으로 줄어듭니다.
-        USD는 꾸준히 양(+)의 인플레이션을 유지하고, 금은 약 1.5~2%를 유지합니다.
-        초기 100%에서 현재 0.8%까지의 극적인 감소를 확인하세요.
+        USD는 꾸준히 양(+)의 인플레이션을 유지하고, 금은 약 1.5%를 유지합니다.
+        2024년 4차 반감기 이후 BTC는 금보다 낮은 인플레이션율을 기록합니다.
       </p>
       <Plot
         data={data}
@@ -480,8 +483,8 @@ function InflationComparisonChart() {
       <div className="mt-2 text-[10px] text-muted-foreground space-y-0.5">
         <div><strong>데이터 출처:</strong></div>
         <div>• BTC: 블록 보상 스케줄 기반 수학적 계산 (연간 신규 발행량 / 기존 공급량 × 100)</div>
-        <div>• USD: U.S. Bureau of Labor Statistics, CPI-U 연평균 (2010–2025)</div>
-        <div>• 금: World Gold Council, 연간 채굴량 / 지상 총 재고량 (2010–2025)</div>
+        <div>• USD: U.S. Bureau of Labor Statistics, CPI-U 연평균 (2015–2025)</div>
+        <div>• 금: World Gold Council, 연간 채굴량 / 지상 총 재고량 (2015–2025)</div>
         <div className="italic">※ USD와 금은 과거 실측 데이터만 표시. BTC는 프로토콜에 의해 확정된 미래 스케줄까지 표시.</div>
       </div>
     </Card>
@@ -512,7 +515,7 @@ export default function Ch05Scarcity() {
 
       <KatexBlock
         display
-        math={"\\text{Total Supply} = \\sum_{n=0}^{\\infty} 210{,}000 \\times \\frac{50}{2^n} = 210{,}000 \\times 50 \\times \\frac{1}{1 - \\frac{1}{2}} = 21{,}000{,}000 \\text{ BTC}"}
+        math={"\\text{Total Supply} = \\sum_{n=0}^{\\infty} 210{,}000 \\times \\frac{50}{2^n} = 210{,}000 \\times \\frac{50}{1 - \\frac{1}{2}} = 210{,}000 \\times 100 = 21{,}000{,}000 \\text{ BTC}"}
       />
       <p className="text-sm text-muted-foreground -mt-2">
         (등비급수 합: 초항 50, 공비 1/2 → 합 = 50 × 2 = 100, 여기에 210,000 블록 곱하면 2,100만)

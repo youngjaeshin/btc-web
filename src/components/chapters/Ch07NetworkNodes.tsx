@@ -63,7 +63,7 @@ function MempoolSimulator() {
   const [txs, setTxs] = useState<MempoolTx[]>(initialTxs);
   const [minedCount, setMinedCount] = useState(0);
   const [log, setLog] = useState<string[]>([]);
-  const [blockCapacity] = useState(1200); // vB — 의도적으로 작게 설정하여 선택/탈락 시각화
+  const blockCapacity = 1200; // vB — 의도적으로 작게 설정하여 선택/탈락 시각화
 
   const addTx = () => {
     const rates = [3, 5, 10, 20, 40, 80, 150, 300];
@@ -171,7 +171,7 @@ function MempoolSimulator() {
             xaxis: { title: { text: "트랜잭션 ID" } },
             paper_bgcolor: "transparent",
             plot_bgcolor: "transparent",
-            font: { size: 11 },
+            font: { size: 11, color: "#666" },
           }}
           config={{ displayModeBar: false, responsive: true }}
           style={{ width: "100%" }}
@@ -689,7 +689,7 @@ const quizQuestions = [
 
 export default function Ch07NetworkNodes() {
   return (
-    <div>
+    <article className="prose prose-neutral dark:prose-invert max-w-none">
       {/* Section 1: Full Node */}
       <h2>1. 풀노드의 역할: Don&apos;t Trust, Verify</h2>
 
@@ -870,6 +870,6 @@ export default function Ch07NetworkNodes() {
       </InfoBox>
 
       <QuizSection questions={quizQuestions} />
-    </div>
+    </article>
   );
 }

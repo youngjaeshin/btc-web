@@ -5,29 +5,7 @@ import { InfoBox } from "@/components/content/InfoBox";
 import { KatexBlock } from "@/components/content/KatexBlock";
 import { QuizSection } from "@/components/quiz/QuizSection";
 import { Plot } from "@/components/content/DynamicPlot";
-
-// ─── Simple hash simulation (same as Ch03) ─────────────────────────────────
-function simpleHash(str: string): string {
-  let h1 = 0xdeadbeef;
-  let h2 = 0x41c6ce57;
-  for (let i = 0; i < str.length; i++) {
-    const ch = str.charCodeAt(i);
-    h1 = Math.imul(h1 ^ ch, 2654435761);
-    h2 = Math.imul(h2 ^ ch, 1597334677);
-  }
-  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-  const combined = (h1 >>> 0) * 4294967296 + (h2 >>> 0);
-  let result = "";
-  let seed = combined;
-  for (let i = 0; i < 8; i++) {
-    seed = Math.imul(seed ^ (seed >>> 17), 0x45d9f3b);
-    seed = Math.imul(seed ^ (seed >>> 13), 0x45d9f3b);
-    seed = seed ^ (seed >>> 16);
-    result += (seed >>> 0).toString(16).padStart(8, "0");
-  }
-  return result.slice(0, 64);
-}
+import { simpleHash } from "@/lib/simpleHash";
 
 function blockHash(nonce: number, difficulty: number): string {
   return simpleHash(`block:nonce=${nonce}:diff=${difficulty}:data=bitcoin`);
@@ -91,8 +69,9 @@ function MiningSimulator() {
       setAttempts(nonceRef.current);
       setHash(blockHash(nonceRef.current - 1, difficulty));
 
-      // Safety: stop after 500k attempts
-      if (nonceRef.current > 500000) {
+      // Safety: stop after dynamic cap based on difficulty
+      const nonceCap = Math.min(Math.pow(16, difficulty) * 3, 2_000_000);
+      if (nonceRef.current > nonceCap) {
         clearInterval(intervalRef.current!);
         setRunning(false);
         setCapExceeded(true);
@@ -147,17 +126,19 @@ function MiningSimulator() {
 
       <div className="flex gap-2 mb-4">
         <button
+          type="button"
           onClick={start}
           disabled={running}
           className="rounded-lg px-4 py-2 text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white transition-colors disabled:opacity-50"
         >
-          {running ? "채굴 중..." : "Start"}
+          {running ? "채굴 중..." : "시작"}
         </button>
         <button
+          type="button"
           onClick={reset}
           className="rounded-lg px-4 py-2 text-sm font-semibold border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
         >
-          Reset
+          초기화
         </button>
       </div>
 
@@ -242,7 +223,7 @@ function HalvingChart() {
     textangle: "-90",
     xanchor: "left" as const,
     yanchor: "top" as const,
-  })) as unknown as Partial<import("plotly.js").Annotations>[];
+  })) satisfies Partial<import("plotly.js").Annotations>[];
 
   return (
     <div className="not-prose my-6 rounded-xl border border-violet-200 dark:border-violet-800 overflow-hidden">
